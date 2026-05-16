@@ -15,7 +15,7 @@ fn snapshot_text_output() {
 fn snapshot_json_output() {
     let src = "say 'hi'\nDO\nEXIT\nsay 'x'\nEND\n";
     let diagnostics = lint(src);
-    let out = render_json(&diagnostics).expect("json render");
+    let out = render_json("test.rexx", &diagnostics).expect("json render");
     assert_snapshot!(out);
 }
 

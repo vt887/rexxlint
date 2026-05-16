@@ -115,7 +115,7 @@ fn main() -> Result<()> {
     let path = cli.path.to_string_lossy().to_string();
     let output = match cli.output {
         Output::Text => render_text(&path, &diagnostics),
-        Output::Json => render_json(&diagnostics)?,
+        Output::Json => render_json(&path, &diagnostics)?,
         Output::Sarif => render_sarif(&path, &diagnostics)?,
     };
 

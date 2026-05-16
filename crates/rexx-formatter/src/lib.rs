@@ -117,12 +117,25 @@ fn normalize_keywords_upper(line: &str, in_block_comment: &mut bool) -> String {
         }
 
         if !in_double && ch == '\'' {
+            // doubled quote inside string is an escape — skip both chars
+            if in_single && i + 1 < chars.len() && chars[i + 1] == '\'' {
+                out.push(ch);
+                out.push('\'');
+                i += 2;
+                continue;
+            }
             in_single = !in_single;
             out.push(ch);
             i += 1;
             continue;
         }
         if !in_single && ch == '"' {
+            if in_double && i + 1 < chars.len() && chars[i + 1] == '"' {
+                out.push(ch);
+                out.push('"');
+                i += 2;
+                continue;
+            }
             in_double = !in_double;
             out.push(ch);
             i += 1;

@@ -9,8 +9,16 @@ pub fn render_text(path: &str, diagnostics: &[Diagnostic]) -> String {
         .join("\n")
 }
 
-pub fn render_json(diagnostics: &[Diagnostic]) -> Result<String, serde_json::Error> {
-    serde_json::to_string_pretty(diagnostics)
+pub fn render_json(path: &str, diagnostics: &[Diagnostic]) -> Result<String, serde_json::Error> {
+    #[derive(Serialize)]
+    struct JsonOutput<'a> {
+        file: &'a str,
+        diagnostics: &'a [Diagnostic],
+    }
+    serde_json::to_string_pretty(&JsonOutput {
+        file: path,
+        diagnostics,
+    })
 }
 
 pub fn render_sarif(path: &str, diagnostics: &[Diagnostic]) -> Result<String, serde_json::Error> {
