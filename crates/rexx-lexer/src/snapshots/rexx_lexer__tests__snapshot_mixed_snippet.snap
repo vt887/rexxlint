@@ -1,0 +1,141 @@
+---
+source: crates/rexx-lexer/src/lib.rs
+expression: lex(src)
+---
+[
+    Token {
+        kind: BlockComment(
+            " header ",
+        ),
+        line: 1,
+        col: 1,
+    },
+    Token {
+        kind: Newline,
+        line: 1,
+        col: 13,
+    },
+    Token {
+        kind: Label(
+            "main",
+        ),
+        line: 2,
+        col: 1,
+    },
+    Token {
+        kind: Keyword(
+            Do,
+        ),
+        line: 2,
+        col: 7,
+    },
+    Token {
+        kind: Newline,
+        line: 2,
+        col: 9,
+    },
+    Token {
+        kind: Keyword(
+            Say,
+        ),
+        line: 3,
+        col: 3,
+    },
+    Token {
+        kind: StringLit(
+            "It's",
+        ),
+        line: 3,
+        col: 7,
+    },
+    Token {
+        kind: Op(
+            Concat,
+        ),
+        line: 3,
+        col: 15,
+    },
+    Token {
+        kind: StringLit(
+            "OK",
+        ),
+        line: 3,
+        col: 18,
+    },
+    Token {
+        kind: Newline,
+        line: 3,
+        col: 22,
+    },
+    Token {
+        kind: Keyword(
+            If,
+        ),
+        line: 4,
+        col: 3,
+    },
+    Token {
+        kind: Identifier(
+            "count",
+        ),
+        line: 4,
+        col: 6,
+    },
+    Token {
+        kind: Op(
+            StrictEq,
+        ),
+        line: 4,
+        col: 12,
+    },
+    Token {
+        kind: Float(
+            0.25,
+        ),
+        line: 4,
+        col: 15,
+    },
+    Token {
+        kind: Keyword(
+            Then,
+        ),
+        line: 4,
+        col: 22,
+    },
+    Token {
+        kind: Keyword(
+            Return,
+        ),
+        line: 4,
+        col: 27,
+    },
+    Token {
+        kind: Continuation,
+        line: 4,
+        col: 33,
+    },
+    Token {
+        kind: Newline,
+        line: 4,
+        col: 34,
+    },
+    Token {
+        kind: Keyword(
+            End,
+        ),
+        line: 5,
+        col: 1,
+    },
+    Token {
+        kind: Newline,
+        line: 5,
+        col: 4,
+    },
+    Token {
+        kind: LineComment(
+            " done",
+        ),
+        line: 6,
+        col: 1,
+    },
+]

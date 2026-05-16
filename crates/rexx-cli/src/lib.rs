@@ -4,7 +4,12 @@ use serde::Serialize;
 pub fn render_text(path: &str, diagnostics: &[Diagnostic]) -> String {
     diagnostics
         .iter()
-        .map(|d| format!("{path}:{}:{} {} {}", d.line, d.column, d.code, d.message))
+        .map(|d| {
+            format!(
+                "{path}:{}:{} {} {}",
+                d.span.start_line, d.span.start_col, d.code, d.message
+            )
+        })
         .collect::<Vec<_>>()
         .join("\n")
 }
@@ -42,7 +47,7 @@ pub fn render_sarif(path: &str, diagnostics: &[Diagnostic]) -> Result<String, se
     let results = diagnostics
         .iter()
         .map(|d| SarifResult {
-            rule_id: d.code,
+            rule_id: &d.code,
             level: severity_to_level(d.severity),
             message: SarifMessage {
                 text: d.message.clone(),
@@ -53,8 +58,8 @@ pub fn render_sarif(path: &str, diagnostics: &[Diagnostic]) -> Result<String, se
                         uri: path.to_string(),
                     },
                     region: SarifRegion {
-                        start_line: d.line,
-                        start_column: d.column,
+                        start_line: d.span.start_line as usize,
+                        start_column: d.span.start_col as usize,
                     },
                 },
             }],
@@ -81,6 +86,7 @@ fn severity_to_level(severity: Severity) -> &'static str {
     match severity {
         Severity::Error => "error",
         Severity::Warning => "warning",
+        Severity::Note => "note",
     }
 }
 

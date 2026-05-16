@@ -1,5 +1,6 @@
 ---
 source: crates/rexx-cli/tests/output_snapshots.rs
+assertion_line: 11
 expression: out
 ---
 sample.rexx:1:1 R001 Missing required first-line Rexx comment

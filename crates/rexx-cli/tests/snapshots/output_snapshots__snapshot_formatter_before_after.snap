@@ -10,7 +10,7 @@ say 'Hello'
 
 --- AFTER ---
 /* The first line of a REXX exec must always be a comment. */
-    SAY 'Hello'
-    DO
+SAY 'Hello'
+DO
     SAY 'World'
 END

@@ -1,45 +1,77 @@
-use rexx_diagnostics::{Diagnostic, Severity};
-
 use crate::context::RuleContext;
+use rexx_ast::{Program, Statement};
+use rexx_diagnostics::Diagnostic;
+use rexx_lexer::{Keyword, TokenKind};
 
 pub fn run(ctx: &RuleContext) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
-    let mut depth = 0usize;
-    let mut terminated_at_depth: Option<usize> = None;
+    traverse_program(&ctx.program, &mut diagnostics);
+    diagnostics
+}
 
-    for line in &ctx.lines {
-        let first = line.tokens.first().map(|x| x.lower.as_str());
+fn traverse_program(prog: &Program, diags: &mut Vec<Diagnostic>) {
+    check_statements(&prog.statements, diags);
+    for stmt in &prog.statements {
+        traverse_statement(stmt, diags);
+    }
+}
 
-        if matches!(first, Some("end")) {
-            depth = depth.saturating_sub(1);
-            if terminated_at_depth.is_some_and(|d| depth < d) {
-                terminated_at_depth = None;
-            }
-            continue;
+fn check_statements(stmts: &[Statement], diags: &mut Vec<Diagnostic>) {
+    let mut exit_found = false;
+    for stmt in stmts {
+        if exit_found && !matches!(stmt, Statement::Label(_) | Statement::Comment(_)) {
+            diags.push(Diagnostic::warning(
+                "R006",
+                "Unreachable code after EXIT/RETURN",
+                stmt.span(),
+            ));
+            // Only flag the first unreachable statement to avoid noise
+            exit_found = false;
         }
 
-        if terminated_at_depth.is_some()
-            && !line.tokens.is_empty()
-            && !matches!(first, Some("when") | Some("otherwise"))
+        if let Statement::Command(c) = stmt
+            && let Some(first_tok) = c.tokens.first()
+            && let TokenKind::Keyword(k) = &first_tok.kind
+            && matches!(k, Keyword::Exit | Keyword::Return)
         {
-            diagnostics.push(Diagnostic {
-                code: "R006",
-                severity: Severity::Warning,
-                message: "Unreachable code after EXIT/RETURN".to_string(),
-                line: line.line_no,
-                column: 1,
-            });
-            terminated_at_depth = None;
-        }
-
-        if matches!(first, Some("do") | Some("select")) {
-            depth += 1;
-        }
-
-        if matches!(first, Some("exit") | Some("return")) {
-            terminated_at_depth = Some(depth);
+            exit_found = true;
         }
     }
-
-    diagnostics
+}
+fn traverse_statement(stmt: &Statement, diags: &mut Vec<Diagnostic>) {
+    match stmt {
+        Statement::DoBlock(b) => {
+            check_statements(&b.body, diags);
+            for s in &b.body {
+                traverse_statement(s, diags);
+            }
+        }
+        Statement::SelectBlock(b) => {
+            for case in &b.cases {
+                if let Statement::Command(_)
+                | Statement::DoBlock(_)
+                | Statement::SelectBlock(_)
+                | Statement::IfStatement(_) = &*case.body
+                {
+                    check_statements(std::slice::from_ref(&case.body), diags);
+                }
+                traverse_statement(&case.body, diags);
+            }
+            if let Some(otherwise) = &b.otherwise {
+                check_statements(&otherwise.body, diags);
+                for s in &otherwise.body {
+                    traverse_statement(s, diags);
+                }
+            }
+        }
+        Statement::IfStatement(i) => {
+            check_statements(std::slice::from_ref(&i.then_branch), diags);
+            traverse_statement(&i.then_branch, diags);
+            if let Some(else_branch) = &i.else_branch {
+                check_statements(std::slice::from_ref(else_branch), diags);
+                traverse_statement(else_branch, diags);
+            }
+        }
+        _ => {}
+    }
 }

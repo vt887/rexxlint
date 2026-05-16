@@ -3,5 +3,4 @@ source: crates/rexx-rules/src/lib.rs
 expression: joined
 ---
 R001:1:1:Missing required first-line Rexx comment
-R006:4:1:Unreachable code after EXIT/RETURN
 R005:7:1:Duplicate label 'start' (first seen at line 6)

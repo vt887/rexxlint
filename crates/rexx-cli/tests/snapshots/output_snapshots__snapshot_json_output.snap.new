@@ -1,5 +1,6 @@
 ---
 source: crates/rexx-cli/tests/output_snapshots.rs
+assertion_line: 19
 expression: out
 ---
 {

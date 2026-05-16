@@ -1,17 +1,22 @@
-use rexx_diagnostics::{Diagnostic, Severity};
-
 use crate::context::RuleContext;
+use rexx_diagnostics::{Diagnostic, Severity, Span};
+use rexx_lexer::TokenKind;
 
 pub fn run(ctx: &RuleContext) -> Vec<Diagnostic> {
-    if ctx.has_unclosed_comment {
-        vec![Diagnostic {
-            code: "R002",
-            severity: Severity::Error,
-            message: "Unclosed block comment".to_string(),
-            line: 1,
-            column: 1,
-        }]
-    } else {
-        Vec::new()
-    }
+    ctx.tokens
+        .iter()
+        .filter_map(|t| {
+            if matches!(t.kind, TokenKind::UnterminatedBlockComment(_)) {
+                Some(Diagnostic {
+                    code: "R002".to_string(),
+                    severity: Severity::Error,
+                    message: "Unclosed block comment".to_string(),
+                    span: Span::new(t.line, t.col, t.line, t.col),
+                    fix: None,
+                })
+            } else {
+                None
+            }
+        })
+        .collect()
 }

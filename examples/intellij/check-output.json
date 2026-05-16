@@ -1,9 +1,5 @@
----
-source: crates/rexx-cli/tests/output_snapshots.rs
-expression: out
----
 {
-  "file": "test.rexx",
+  "file": "stdin",
   "diagnostics": [
     {
       "code": "R001",
@@ -17,21 +13,32 @@ expression: out
       }
     },
     {
+      "code": "R007",
+      "severity": "warning",
+      "message": "Unsafe INTERPRET usage",
+      "span": {
+        "start_line": 2,
+        "start_col": 1,
+        "end_line": 2,
+        "end_col": 11
+      }
+    },
+    {
       "code": "R010",
       "severity": "warning",
-      "message": "Inconsistent keyword casing (expected uppercase)",
+      "message": "Inconsistent keyword casing (expected lowercase)",
       "span": {
-        "start_line": 1,
+        "start_line": 2,
         "start_col": 1,
-        "end_line": 1,
+        "end_line": 2,
         "end_col": 1
       },
       "fix": {
-        "replacement": "SAY",
+        "replacement": "interpret",
         "span": {
-          "start_line": 1,
+          "start_line": 2,
           "start_col": 1,
-          "end_line": 1,
+          "end_line": 2,
           "end_col": 1
         }
       }
@@ -45,26 +52,6 @@ expression: out
         "start_col": 1,
         "end_line": 4,
         "end_col": 5
-      }
-    },
-    {
-      "code": "R010",
-      "severity": "warning",
-      "message": "Inconsistent keyword casing (expected uppercase)",
-      "span": {
-        "start_line": 4,
-        "start_col": 1,
-        "end_line": 4,
-        "end_col": 1
-      },
-      "fix": {
-        "replacement": "SAY",
-        "span": {
-          "start_line": 4,
-          "start_col": 1,
-          "end_line": 4,
-          "end_col": 1
-        }
       }
     }
   ]
