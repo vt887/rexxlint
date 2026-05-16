@@ -781,7 +781,7 @@ mod tests {
                 },
                 Token {
                     kind: TokenKind::Newline,
-                    text: "\r\n".to_string(),
+                    text: "\n".to_string(),
                     line: 2,
                     col: 2,
                 },

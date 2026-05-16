@@ -20,6 +20,7 @@ Program {
                                     kind: Identifier(
                                         "a",
                                     ),
+                                    text: "a",
                                     line: 2,
                                     col: 7,
                                 },
@@ -27,6 +28,7 @@ Program {
                                     kind: Op(
                                         Eq,
                                     ),
+                                    text: "=",
                                     line: 2,
                                     col: 8,
                                 },
@@ -34,6 +36,7 @@ Program {
                                     kind: Integer(
                                         1,
                                     ),
+                                    text: "1",
                                     line: 2,
                                     col: 9,
                                 },
@@ -52,6 +55,7 @@ Program {
                                         kind: Keyword(
                                             Say,
                                         ),
+                                        text: "say",
                                         line: 2,
                                         col: 16,
                                     },
@@ -59,6 +63,7 @@ Program {
                                         kind: Integer(
                                             1,
                                         ),
+                                        text: "1",
                                         line: 2,
                                         col: 20,
                                     },
@@ -89,6 +94,7 @@ Program {
                                             kind: Keyword(
                                                 Say,
                                             ),
+                                            text: "say",
                                             line: 4,
                                             col: 3,
                                         },
@@ -96,6 +102,7 @@ Program {
                                             kind: Integer(
                                                 0,
                                             ),
+                                            text: "0",
                                             line: 4,
                                             col: 7,
                                         },
@@ -122,6 +129,7 @@ Program {
                         kind: Keyword(
                             End,
                         ),
+                        text: "end",
                         line: 5,
                         col: 1,
                     },

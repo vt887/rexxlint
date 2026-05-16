@@ -1,5 +1,6 @@
 ---
 source: crates/rexx-rules/src/lib.rs
+assertion_line: 145
 expression: joined
 ---
 R001:1:1:Missing required first-line Rexx comment

@@ -7,11 +7,13 @@ expression: lex(src)
         kind: BlockComment(
             " header ",
         ),
+        text: "/* header */",
         line: 1,
         col: 1,
     },
     Token {
         kind: Newline,
+        text: "\n",
         line: 1,
         col: 13,
     },
@@ -19,6 +21,7 @@ expression: lex(src)
         kind: Label(
             "main",
         ),
+        text: "main:",
         line: 2,
         col: 1,
     },
@@ -26,11 +29,13 @@ expression: lex(src)
         kind: Keyword(
             Do,
         ),
+        text: "do",
         line: 2,
         col: 7,
     },
     Token {
         kind: Newline,
+        text: "\n",
         line: 2,
         col: 9,
     },
@@ -38,6 +43,7 @@ expression: lex(src)
         kind: Keyword(
             Say,
         ),
+        text: "say",
         line: 3,
         col: 3,
     },
@@ -45,6 +51,7 @@ expression: lex(src)
         kind: StringLit(
             "It's",
         ),
+        text: "'It''s'",
         line: 3,
         col: 7,
     },
@@ -52,6 +59,7 @@ expression: lex(src)
         kind: Op(
             Concat,
         ),
+        text: "||",
         line: 3,
         col: 15,
     },
@@ -59,11 +67,13 @@ expression: lex(src)
         kind: StringLit(
             "OK",
         ),
+        text: "\"OK\"",
         line: 3,
         col: 18,
     },
     Token {
         kind: Newline,
+        text: "\n",
         line: 3,
         col: 22,
     },
@@ -71,6 +81,7 @@ expression: lex(src)
         kind: Keyword(
             If,
         ),
+        text: "if",
         line: 4,
         col: 3,
     },
@@ -78,6 +89,7 @@ expression: lex(src)
         kind: Identifier(
             "count",
         ),
+        text: "count",
         line: 4,
         col: 6,
     },
@@ -85,6 +97,7 @@ expression: lex(src)
         kind: Op(
             StrictEq,
         ),
+        text: "==",
         line: 4,
         col: 12,
     },
@@ -92,6 +105,7 @@ expression: lex(src)
         kind: Float(
             0.25,
         ),
+        text: "2.5e-1",
         line: 4,
         col: 15,
     },
@@ -99,6 +113,7 @@ expression: lex(src)
         kind: Keyword(
             Then,
         ),
+        text: "then",
         line: 4,
         col: 22,
     },
@@ -106,16 +121,19 @@ expression: lex(src)
         kind: Keyword(
             Return,
         ),
+        text: "return",
         line: 4,
         col: 27,
     },
     Token {
         kind: Continuation,
+        text: ";",
         line: 4,
         col: 33,
     },
     Token {
         kind: Newline,
+        text: "\n",
         line: 4,
         col: 34,
     },
@@ -123,11 +141,13 @@ expression: lex(src)
         kind: Keyword(
             End,
         ),
+        text: "end",
         line: 5,
         col: 1,
     },
     Token {
         kind: Newline,
+        text: "\n",
         line: 5,
         col: 4,
     },
@@ -135,6 +155,7 @@ expression: lex(src)
         kind: LineComment(
             " done",
         ),
+        text: "-- done",
         line: 6,
         col: 1,
     },

@@ -12,6 +12,7 @@ Program {
                             kind: Keyword(
                                 Do,
                             ),
+                            text: "do",
                             line: 1,
                             col: 1,
                         },
@@ -31,6 +32,7 @@ Program {
                                     kind: Keyword(
                                         Say,
                                     ),
+                                    text: "say",
                                     line: 2,
                                     col: 3,
                                 },
@@ -38,6 +40,7 @@ Program {
                                     kind: StringLit(
                                         "hi",
                                     ),
+                                    text: "'hi'",
                                     line: 2,
                                     col: 7,
                                 },
@@ -56,6 +59,7 @@ Program {
                         kind: Keyword(
                             End,
                         ),
+                        text: "end",
                         line: 3,
                         col: 1,
                     },

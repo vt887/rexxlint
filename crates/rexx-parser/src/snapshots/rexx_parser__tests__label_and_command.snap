@@ -22,6 +22,7 @@ Program {
                         kind: Keyword(
                             Say,
                         ),
+                        text: "say",
                         line: 2,
                         col: 2,
                     },
@@ -29,6 +30,7 @@ Program {
                         kind: StringLit(
                             "started",
                         ),
+                        text: "'started'",
                         line: 2,
                         col: 6,
                     },
