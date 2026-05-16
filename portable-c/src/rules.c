@@ -49,6 +49,10 @@ int rexx_portable_run_rules(const char *content, rexx_diagnostics_t *out) {
         while (*cursor != '\0' && *cursor != '\n' && len + 1 < sizeof(line)) {
             line[len++] = *cursor++;
         }
+        /* consume any remaining characters on this physical line */
+        while (*cursor != '\0' && *cursor != '\n') {
+            cursor++;
+        }
         if (*cursor == '\n') {
             cursor++;
         }
@@ -71,7 +75,7 @@ int rexx_portable_run_rules(const char *content, rexx_diagnostics_t *out) {
         if (strstr(line, "/*") != NULL) {
             open_comments++;
         }
-        if (strstr(line, "*/") != NULL) {
+        if (strstr(line, "*/") != NULL && open_comments > 0) {
             open_comments--;
         }
 

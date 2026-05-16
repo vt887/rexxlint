@@ -44,11 +44,24 @@ pub fn build_context(source: &str) -> RuleContext {
                 continue;
             }
             if !in_double && ch == '\'' {
+                // doubled quote inside string is an escape, not string end
+                if in_single && chars.peek() == Some(&'\'') {
+                    cleaned.push(' ');
+                    cleaned.push(' ');
+                    let _ = chars.next();
+                    continue;
+                }
                 in_single = !in_single;
                 cleaned.push(' ');
                 continue;
             }
             if !in_single && ch == '"' {
+                if in_double && chars.peek() == Some(&'"') {
+                    cleaned.push(' ');
+                    cleaned.push(' ');
+                    let _ = chars.next();
+                    continue;
+                }
                 in_double = !in_double;
                 cleaned.push(' ');
                 continue;

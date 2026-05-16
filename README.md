@@ -32,4 +32,4 @@ cargo build --release -p rexx-cli
 ## Legacy Platforms
 
 `rexxlint` includes a C99 compatibility layer for rare and legacy targets in `portable-c/`.
-See [legacy-platform-support.md](/Users/tymoshv/MyPetProjects/rexxlint/docs/legacy-platform-support.md) for tiering, scope, and build constraints.
+See [legacy-platform-support.md](docs/legacy-platform-support.md) for tiering, scope, and build constraints.

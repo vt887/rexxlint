@@ -1,5 +1,4 @@
 use std::fs;
-use std::io;
 use std::path::PathBuf;
 
 use anyhow::Result;
@@ -8,19 +7,12 @@ use rexx_analyzer::lint;
 use rexx_cli::{render_json, render_sarif, render_text};
 use rexx_formatter::format_rexx_with_profile_name;
 
-fn get_version() -> io::Result<String> {
-    let version = std::fs::read_to_string("VERSION")?.trim().to_string();
-    Ok(version)
+fn get_version() -> &'static str {
+    env!("CARGO_PKG_VERSION")
 }
 
-fn get_build_date() -> String {
-    option_env!("REXXLINT_BUILD_DATE")
-        .map(|s| s.to_string())
-        .unwrap_or_else(|| {
-            // fallback to current date in ISO format
-            use chrono::prelude::*;
-            Local::now().format("%Y-%m-%d").to_string()
-        })
+fn get_build_date() -> &'static str {
+    option_env!("REXXLINT_BUILD_DATE").unwrap_or("unknown")
 }
 
 fn get_bitness() -> usize {
@@ -44,7 +36,7 @@ where switches are:
   --fix                      apply formatting changes in-place
   --format                   print formatted output to stdout
   --output=MODE              output mode: text|json|sarif (default: text)
-  --profile=PROFILE          formatting profile (default: mainframe-compatible)
+  --profile=PROFILE          formatting profile: standard|mainframe-compatible|minimal
 
 "program" is the Rexx file to lint or format
 
@@ -84,27 +76,25 @@ struct Cli {
     #[arg(
         long,
         default_value = "mainframe-compatible",
-        help = "Formatting profile"
+        help = "Formatting profile: standard|mainframe-compatible|minimal"
     )]
     profile: String,
 }
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
-    let version = get_version().unwrap_or_else(|_| "unknown".to_string());
+    let version = get_version();
     let date = get_build_date();
     let bits = get_bitness();
     if args.len() == 1 || args.iter().any(|arg| arg == "--help" || arg == "-h") {
-        println!("{}", custom_help(&version, &date, bits));
+        println!("{}", custom_help(version, date, bits));
         return Ok(());
     }
-    if args.iter().any(|arg| arg == "--version" || arg == "-V" || arg == "-v") {
-        println!(
-            "rexxlint: {} {} ({} bit)",
-            version,
-            date,
-            bits
-        );
+    if args
+        .iter()
+        .any(|arg| arg == "--version" || arg == "-V" || arg == "-v")
+    {
+        println!("rexxlint: {} {} ({} bit)", version, date, bits);
         return Ok(());
     }
 
@@ -131,6 +121,10 @@ fn main() -> Result<()> {
 
     if !output.is_empty() {
         println!("{output}");
+    }
+
+    if !diagnostics.is_empty() {
+        std::process::exit(1);
     }
 
     Ok(())

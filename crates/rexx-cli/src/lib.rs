@@ -23,6 +23,12 @@ pub fn render_sarif(path: &str, diagnostics: &[Diagnostic]) -> Result<String, se
         rule("R006", "Unreachable code", "warning"),
         rule("R007", "Unsafe INTERPRET", "warning"),
         rule("R008", "Inconsistent keyword casing", "warning"),
+        rule("R009", "Line too long", "warning"),
+        rule(
+            "R010",
+            "Tabs forbidden (mainframe-compatible profile)",
+            "error",
+        ),
     ];
 
     let results = diagnostics

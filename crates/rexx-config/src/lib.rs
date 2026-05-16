@@ -23,9 +23,27 @@ pub const MAINFRAME_COMPATIBLE: FormattingProfile = FormattingProfile {
     tabs_forbidden: true,
 };
 
+pub const STANDARD: FormattingProfile = FormattingProfile {
+    name: "standard",
+    line_length_soft: 100,
+    line_length_hard: 200,
+    uppercase_keywords: false,
+    tabs_forbidden: false,
+};
+
+pub const MINIMAL: FormattingProfile = FormattingProfile {
+    name: "minimal",
+    line_length_soft: 200,
+    line_length_hard: 200,
+    uppercase_keywords: false,
+    tabs_forbidden: false,
+};
+
 pub fn load_profile(name: &str) -> Result<FormattingProfile, ProfileError> {
     match name {
-        "mainframe-compatible" => Ok(MAINFRAME_COMPATIBLE),
+        "mainframe-compatible" | "mainframe" => Ok(MAINFRAME_COMPATIBLE),
+        "standard" => Ok(STANDARD),
+        "minimal" => Ok(MINIMAL),
         _ => Err(ProfileError::UnknownProfile(name.to_string())),
     }
 }

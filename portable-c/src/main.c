@@ -62,15 +62,35 @@ int rexx_run_file(const char *path, const rexx_cli_options_t *options) {
         return 2;
     }
 
+    if (options->fix) {
+        fprintf(stderr, "rexxlint-portable: --fix is not yet implemented in the portable C layer\n");
+    }
+
     rexx_diagnostics_init(&diagnostics);
     if (rexx_portable_run_rules(content, &diagnostics) != 0) {
         free(content);
         return 3;
     }
 
-    for (i = 0; i < diagnostics.count; i++) {
-        const rexx_diagnostic_t *d = &diagnostics.items[i];
-        printf("%s:%lu:%lu %s %s\n", path, (unsigned long)d->line, (unsigned long)d->column, d->rule_id, d->message);
+    if (options->json) {
+        printf("[\n");
+        for (i = 0; i < diagnostics.count; i++) {
+            const rexx_diagnostic_t *d = &diagnostics.items[i];
+            printf(
+                "  {\"rule\":\"%s\",\"severity\":\"%s\",\"line\":%lu,\"column\":%lu,\"message\":\"%s\"}%s\n",
+                d->rule_id,
+                d->severity == REXX_SEVERITY_ERROR ? "error" : "warning",
+                (unsigned long)d->line,
+                (unsigned long)d->column,
+                d->message,
+                i + 1 < diagnostics.count ? "," : "");
+        }
+        printf("]\n");
+    } else {
+        for (i = 0; i < diagnostics.count; i++) {
+            const rexx_diagnostic_t *d = &diagnostics.items[i];
+            printf("%s:%lu:%lu %s %s\n", path, (unsigned long)d->line, (unsigned long)d->column, d->rule_id, d->message);
+        }
     }
 
     free(content);

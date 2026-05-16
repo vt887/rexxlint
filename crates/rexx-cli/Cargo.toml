@@ -16,7 +16,7 @@ serde_json.workspace = true
 rexx-analyzer = { path = "../rexx-analyzer" }
 rexx-formatter = { path = "../rexx-formatter" }
 rexx-diagnostics = { path = "../rexx-diagnostics" }
-chrono = "0.4.44"
+chrono = { version = "0.4.44", optional = true }
 
 [dev-dependencies]
 insta = "1"

@@ -1,5 +1,6 @@
 ---
 source: crates/rexx-cli/tests/output_snapshots.rs
+assertion_line: 27
 expression: out
 ---
 {
@@ -104,6 +105,30 @@ expression: out
               },
               "defaultConfiguration": {
                 "level": "warning"
+              }
+            },
+            {
+              "id": "R009",
+              "shortDescription": {
+                "text": "Line too long"
+              },
+              "help": {
+                "text": "Rule R009: Line too long"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "R010",
+              "shortDescription": {
+                "text": "Tabs forbidden (mainframe-compatible profile)"
+              },
+              "help": {
+                "text": "Rule R010: Tabs forbidden (mainframe-compatible profile)"
+              },
+              "defaultConfiguration": {
+                "level": "error"
               }
             }
           ]
