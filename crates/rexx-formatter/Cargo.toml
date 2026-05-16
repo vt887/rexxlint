@@ -1,0 +1,21 @@
+[package]
+name = "rexx-formatter"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rexx-config = { path = "../rexx-config" }
+rexx-ast = { path = "../rexx-ast" }
+rexx-parser = { path = "../rexx-parser" }
+rexx-lexer = { path = "../rexx-lexer" }
+rexx-diagnostics = { path = "../rexx-diagnostics" }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "formatter"
+harness = false
+path = "../../benches/formatter.rs"
+

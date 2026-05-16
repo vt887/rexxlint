@@ -1,0 +1,22 @@
+[package]
+name = "rexx-rules"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rexx-diagnostics = { path = "../rexx-diagnostics" }
+rexx-config = { path = "../rexx-config" }
+rexx-ast = { path = "../rexx-ast" }
+rexx-parser = { path = "../rexx-parser" }
+rexx-lexer = { path = "../rexx-lexer" }
+
+[dev-dependencies]
+insta = "1"
+criterion = { version = "0.5", features = ["html_reports"] }
+rexx-analyzer = { path = "../rexx-analyzer" }
+
+[[bench]]
+name = "lint"
+harness = false
+path = "../../benches/lint.rs"

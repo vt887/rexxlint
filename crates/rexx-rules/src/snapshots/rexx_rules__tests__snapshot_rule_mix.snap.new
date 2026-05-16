@@ -1,0 +1,11 @@
+---
+source: crates/rexx-rules/src/lib.rs
+assertion_line: 145
+expression: joined
+---
+R001:1:1:Missing required first-line Rexx comment
+R010:2:1:Inconsistent keyword casing (expected lowercase)
+R010:3:1:Inconsistent keyword casing (expected lowercase)
+R006:4:1:Unreachable code after EXIT/RETURN
+R010:5:1:Inconsistent keyword casing (expected lowercase)
+R005:7:1:Duplicate label 'start' (first seen at line 6)

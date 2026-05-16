@@ -1,0 +1,152 @@
+---
+source: crates/rexx-parser/src/lib.rs
+expression: prog
+---
+Program {
+    statements: [
+        SelectBlock(
+            SelectBlock {
+                header_span: Span {
+                    start_line: 1,
+                    start_col: 1,
+                    end_line: 1,
+                    end_col: 1,
+                },
+                cases: [
+                    WhenCase {
+                        condition: Command {
+                            tokens: [
+                                Token {
+                                    kind: Identifier(
+                                        "a",
+                                    ),
+                                    text: "a",
+                                    line: 2,
+                                    col: 7,
+                                },
+                                Token {
+                                    kind: Op(
+                                        Eq,
+                                    ),
+                                    text: "=",
+                                    line: 2,
+                                    col: 8,
+                                },
+                                Token {
+                                    kind: Integer(
+                                        1,
+                                    ),
+                                    text: "1",
+                                    line: 2,
+                                    col: 9,
+                                },
+                            ],
+                            span: Span {
+                                start_line: 2,
+                                start_col: 2,
+                                end_line: 2,
+                                end_col: 11,
+                            },
+                        },
+                        body: Command(
+                            Command {
+                                tokens: [
+                                    Token {
+                                        kind: Keyword(
+                                            Say,
+                                        ),
+                                        text: "say",
+                                        line: 2,
+                                        col: 16,
+                                    },
+                                    Token {
+                                        kind: Integer(
+                                            1,
+                                        ),
+                                        text: "1",
+                                        line: 2,
+                                        col: 20,
+                                    },
+                                ],
+                                span: Span {
+                                    start_line: 2,
+                                    start_col: 16,
+                                    end_line: 2,
+                                    end_col: 20,
+                                },
+                            },
+                        ),
+                        span: Span {
+                            start_line: 2,
+                            start_col: 2,
+                            end_line: 2,
+                            end_col: 20,
+                        },
+                    },
+                ],
+                otherwise: Some(
+                    OtherwiseCase {
+                        body: [
+                            Command(
+                                Command {
+                                    tokens: [
+                                        Token {
+                                            kind: Keyword(
+                                                Say,
+                                            ),
+                                            text: "say",
+                                            line: 4,
+                                            col: 3,
+                                        },
+                                        Token {
+                                            kind: Integer(
+                                                0,
+                                            ),
+                                            text: "0",
+                                            line: 4,
+                                            col: 7,
+                                        },
+                                    ],
+                                    span: Span {
+                                        start_line: 4,
+                                        start_col: 3,
+                                        end_line: 4,
+                                        end_col: 7,
+                                    },
+                                },
+                            ),
+                        ],
+                        span: Span {
+                            start_line: 3,
+                            start_col: 2,
+                            end_line: 4,
+                            end_col: 8,
+                        },
+                    },
+                ),
+                footer_tokens: [
+                    Token {
+                        kind: Keyword(
+                            End,
+                        ),
+                        text: "end",
+                        line: 5,
+                        col: 1,
+                    },
+                ],
+                span: Span {
+                    start_line: 1,
+                    start_col: 1,
+                    end_line: 5,
+                    end_col: 1,
+                },
+            },
+        ),
+    ],
+    span: Span {
+        start_line: 1,
+        start_col: 1,
+        end_line: 5,
+        end_col: 1,
+    },
+}

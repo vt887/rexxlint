@@ -1,0 +1,82 @@
+---
+source: crates/rexx-parser/src/lib.rs
+expression: prog
+---
+Program {
+    statements: [
+        DoBlock(
+            DoBlock {
+                header: Command {
+                    tokens: [
+                        Token {
+                            kind: Keyword(
+                                Do,
+                            ),
+                            text: "do",
+                            line: 1,
+                            col: 1,
+                        },
+                    ],
+                    span: Span {
+                        start_line: 1,
+                        start_col: 1,
+                        end_line: 1,
+                        end_col: 1,
+                    },
+                },
+                body: [
+                    Command(
+                        Command {
+                            tokens: [
+                                Token {
+                                    kind: Keyword(
+                                        Say,
+                                    ),
+                                    text: "say",
+                                    line: 2,
+                                    col: 3,
+                                },
+                                Token {
+                                    kind: StringLit(
+                                        "hi",
+                                    ),
+                                    text: "'hi'",
+                                    line: 2,
+                                    col: 7,
+                                },
+                            ],
+                            span: Span {
+                                start_line: 2,
+                                start_col: 3,
+                                end_line: 2,
+                                end_col: 7,
+                            },
+                        },
+                    ),
+                ],
+                footer_tokens: [
+                    Token {
+                        kind: Keyword(
+                            End,
+                        ),
+                        text: "end",
+                        line: 3,
+                        col: 1,
+                    },
+                ],
+                span: Span {
+                    start_line: 1,
+                    start_col: 1,
+                    end_line: 3,
+                    end_col: 1,
+                },
+            },
+        ),
+    ],
+    span: Span {
+        start_line: 1,
+        start_col: 1,
+        end_line: 3,
+        end_col: 1,
+    },
+}

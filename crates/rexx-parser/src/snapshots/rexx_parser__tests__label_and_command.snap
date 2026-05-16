@@ -1,0 +1,53 @@
+---
+source: crates/rexx-parser/src/lib.rs
+expression: prog
+---
+Program {
+    statements: [
+        Label(
+            Label {
+                name: "START",
+                span: Span {
+                    start_line: 1,
+                    start_col: 1,
+                    end_line: 1,
+                    end_col: 1,
+                },
+            },
+        ),
+        Command(
+            Command {
+                tokens: [
+                    Token {
+                        kind: Keyword(
+                            Say,
+                        ),
+                        text: "say",
+                        line: 2,
+                        col: 2,
+                    },
+                    Token {
+                        kind: StringLit(
+                            "started",
+                        ),
+                        text: "'started'",
+                        line: 2,
+                        col: 6,
+                    },
+                ],
+                span: Span {
+                    start_line: 2,
+                    start_col: 2,
+                    end_line: 2,
+                    end_col: 6,
+                },
+            },
+        ),
+    ],
+    span: Span {
+        start_line: 1,
+        start_col: 1,
+        end_line: 2,
+        end_col: 6,
+    },
+}

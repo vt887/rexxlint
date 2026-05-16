@@ -1,0 +1,220 @@
+---
+source: crates/rexx-cli/tests/output_snapshots.rs
+expression: out
+---
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "rexxlint",
+          "rules": [
+            {
+              "id": "R001",
+              "shortDescription": {
+                "text": "Missing first-line comment"
+              },
+              "help": {
+                "text": "Rule R001: Missing first-line comment"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "R002",
+              "shortDescription": {
+                "text": "Unclosed block comment"
+              },
+              "help": {
+                "text": "Rule R002: Unclosed block comment"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "R003",
+              "shortDescription": {
+                "text": "Unmatched DO/END"
+              },
+              "help": {
+                "text": "Rule R003: Unmatched DO/END"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "R004",
+              "shortDescription": {
+                "text": "Unmatched SELECT/END"
+              },
+              "help": {
+                "text": "Rule R004: Unmatched SELECT/END"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "R005",
+              "shortDescription": {
+                "text": "Duplicate labels"
+              },
+              "help": {
+                "text": "Rule R005: Duplicate labels"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "R006",
+              "shortDescription": {
+                "text": "Unreachable code"
+              },
+              "help": {
+                "text": "Rule R006: Unreachable code"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "R007",
+              "shortDescription": {
+                "text": "Unsafe INTERPRET"
+              },
+              "help": {
+                "text": "Rule R007: Unsafe INTERPRET"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "R008",
+              "shortDescription": {
+                "text": "Inconsistent keyword casing"
+              },
+              "help": {
+                "text": "Rule R008: Inconsistent keyword casing"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "R009",
+              "shortDescription": {
+                "text": "Line too long"
+              },
+              "help": {
+                "text": "Rule R009: Line too long"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "R010",
+              "shortDescription": {
+                "text": "Tabs forbidden (mainframe-compatible profile)"
+              },
+              "help": {
+                "text": "Rule R010: Tabs forbidden (mainframe-compatible profile)"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "R001",
+          "level": "error",
+          "message": {
+            "text": "Missing required first-line Rexx comment"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sample.rexx"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "R010",
+          "level": "warning",
+          "message": {
+            "text": "Inconsistent keyword casing (expected uppercase)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sample.rexx"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "R006",
+          "level": "warning",
+          "message": {
+            "text": "Unreachable code after EXIT/RETURN"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sample.rexx"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "R010",
+          "level": "warning",
+          "message": {
+            "text": "Inconsistent keyword casing (expected uppercase)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sample.rexx"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 1
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

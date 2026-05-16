@@ -1,0 +1,100 @@
+---
+source: crates/rexx-parser/src/lib.rs
+expression: prog
+---
+Program {
+    statements: [
+        IfStatement(
+            IfStatement {
+                condition: Command {
+                    tokens: [
+                        Token {
+                            kind: Identifier(
+                                "a",
+                            ),
+                            text: "a",
+                            line: 1,
+                            col: 4,
+                        },
+                    ],
+                    span: Span {
+                        start_line: 1,
+                        start_col: 1,
+                        end_line: 1,
+                        end_col: 6,
+                    },
+                },
+                then_branch: Command(
+                    Command {
+                        tokens: [
+                            Token {
+                                kind: Keyword(
+                                    Say,
+                                ),
+                                text: "say",
+                                line: 1,
+                                col: 11,
+                            },
+                            Token {
+                                kind: Integer(
+                                    1,
+                                ),
+                                text: "1",
+                                line: 1,
+                                col: 15,
+                            },
+                        ],
+                        span: Span {
+                            start_line: 1,
+                            start_col: 11,
+                            end_line: 1,
+                            end_col: 15,
+                        },
+                    },
+                ),
+                else_branch: Some(
+                    Command(
+                        Command {
+                            tokens: [
+                                Token {
+                                    kind: Keyword(
+                                        Say,
+                                    ),
+                                    text: "say",
+                                    line: 1,
+                                    col: 23,
+                                },
+                                Token {
+                                    kind: Integer(
+                                        2,
+                                    ),
+                                    text: "2",
+                                    line: 1,
+                                    col: 27,
+                                },
+                            ],
+                            span: Span {
+                                start_line: 1,
+                                start_col: 23,
+                                end_line: 1,
+                                end_col: 27,
+                            },
+                        },
+                    ),
+                ),
+                span: Span {
+                    start_line: 1,
+                    start_col: 1,
+                    end_line: 1,
+                    end_col: 27,
+                },
+            },
+        ),
+    ],
+    span: Span {
+        start_line: 1,
+        start_col: 1,
+        end_line: 1,
+        end_col: 27,
+    },
+}
