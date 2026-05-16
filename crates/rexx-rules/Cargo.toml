@@ -1,0 +1,12 @@
+[package]
+name = "rexx-rules"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rexx-diagnostics = { path = "../rexx-diagnostics" }
+rexx-config = { path = "../rexx-config" }
+
+[dev-dependencies]
+insta = "1"

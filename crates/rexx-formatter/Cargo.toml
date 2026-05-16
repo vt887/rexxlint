@@ -1,0 +1,8 @@
+[package]
+name = "rexx-formatter"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rexx-config = { path = "../rexx-config" }

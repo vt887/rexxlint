@@ -1,0 +1,20 @@
+---
+source: crates/rexx-cli/tests/output_snapshots.rs
+expression: out
+---
+[
+  {
+    "code": "R001",
+    "severity": "error",
+    "message": "Missing required first-line Rexx comment",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "code": "R006",
+    "severity": "warning",
+    "message": "Unreachable code after EXIT/RETURN",
+    "line": 4,
+    "column": 1
+  }
+]

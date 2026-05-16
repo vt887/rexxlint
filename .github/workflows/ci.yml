@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Rust Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Rust artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: make fmt-check
+
+      - name: Lint
+        run: make lint
+
+      - name: Test
+        run: make test
+
+      - name: Build debug
+        run: make build
+
+  portable:
+    name: Portable C
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and test portable-c
+        run: make portable-all
+
+  package:
+    name: Package CLI
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [quality, portable]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build release
+        run: make release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          tar -czf dist/rexxlint-linux-x86_64.tar.gz -C target/release rexxlint
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rexxlint-${{ github.sha }}
+          path: dist/*
+          retention-days: 30
+          if-no-files-found: error

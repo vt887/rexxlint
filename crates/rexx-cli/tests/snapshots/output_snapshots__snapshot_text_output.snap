@@ -1,0 +1,6 @@
+---
+source: crates/rexx-cli/tests/output_snapshots.rs
+expression: out
+---
+sample.rexx:1:1 R001 Missing required first-line Rexx comment
+sample.rexx:4:1 R006 Unreachable code after EXIT/RETURN

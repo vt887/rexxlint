@@ -1,0 +1,23 @@
+[package]
+name = "rexx-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "rexxlint"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rexx-analyzer = { path = "../rexx-analyzer" }
+rexx-formatter = { path = "../rexx-formatter" }
+rexx-diagnostics = { path = "../rexx-diagnostics" }
+chrono = "0.4.44"
+
+[dev-dependencies]
+insta = "1"
+rexx-analyzer = { path = "../rexx-analyzer" }

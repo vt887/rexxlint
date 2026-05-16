@@ -1,0 +1,16 @@
+---
+source: crates/rexx-cli/tests/output_snapshots.rs
+expression: "format!(\"--- BEFORE ---\\n{before}\\n--- AFTER ---\\n{after}\")"
+---
+--- BEFORE ---
+say 'Hello'
+	DO
+		Say 'World'
+	END
+
+--- AFTER ---
+/* The first line of a REXX exec must always be a comment. */
+    SAY 'Hello'
+    DO
+    SAY 'World'
+END
