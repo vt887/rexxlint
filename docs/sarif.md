@@ -14,7 +14,7 @@ Exit codes: 0 = no findings, 1 = findings present, 2 = hard error.
 
 ```jsonc
 {
-  "schema_version": 1,        // rexxlint internal version (integer)
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
   "version": "2.1.0",         // SARIF spec version
   "runs": [
     {
@@ -57,11 +57,15 @@ Exit codes: 0 = no findings, 1 = findings present, 2 = hard error.
 }
 ```
 
-## `schema_version` field
+## `$schema` field
 
-The top-level `"schema_version": 1` is a rexxlint-specific integer that tracks
-the shape of the JSON envelope. It is distinct from the SARIF spec version.
-See [json-protocol.md](json-protocol.md) for the versioning policy.
+The top-level `"$schema"` field points to the SARIF 2.1.0 JSON Schema and
+allows validators to confirm the document structure. It is always present in
+rexxlint SARIF output.
+
+The rexxlint-specific protocol version is tracked by `"schema_version"` in
+the **JSON output format** (`--output json`) only — it does not appear in
+SARIF, which forbids additional top-level properties per the spec.
 
 ## Severity mapping
 

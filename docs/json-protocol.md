@@ -56,10 +56,10 @@ reject or warn on unexpected values rather than silently misparse.
 
 ## SARIF output (`check --output sarif`)
 
-See [`sarif.md`](sarif.md) for the full SARIF envelope structure. The
-`schema_version` integer appears at the top level of the SARIF envelope as
-well, alongside the SARIF `"version": "2.1.0"` field — the two are
-independent.
+See [`sarif.md`](sarif.md) for the full SARIF envelope structure. SARIF output
+uses a `"$schema"` URI (per the SARIF 2.1.0 spec) instead of
+`"schema_version"` — the SARIF specification forbids additional top-level
+properties, so `schema_version` does **not** appear in SARIF output.
 
 ## Versioning policy
 

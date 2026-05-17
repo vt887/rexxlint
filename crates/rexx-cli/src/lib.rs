@@ -127,7 +127,7 @@ pub fn render_sarif_multi(outcomes: &[FileOutcome]) -> Result<String, serde_json
         .collect();
 
     let sarif = Sarif {
-        schema_version: 1,
+        schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
         version: "2.1.0",
         runs: vec![SarifRun {
             tool: SarifTool {
@@ -170,7 +170,8 @@ fn rule(id: &'static str, name: &'static str, level: &'static str) -> SarifRule<
 
 #[derive(Serialize)]
 struct Sarif<'a> {
-    schema_version: u32,
+    #[serde(rename = "$schema")]
+    schema: &'a str,
     version: &'a str,
     runs: Vec<SarifRun<'a>>,
 }
