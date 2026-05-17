@@ -108,7 +108,7 @@ jobs:
         run: ./rexxlint check --output sarif . > results.sarif
         continue-on-error: true
 
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif
           category: rexxlint
