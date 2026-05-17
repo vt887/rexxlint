@@ -1,8 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
@@ -198,8 +196,6 @@ fn run_check(
     };
     let files = discover(paths, &opts)?;
 
-    let has_diagnostics = Arc::new(AtomicBool::new(false));
-
     let mut outcomes: Vec<(PathBuf, FileOutcome)> = pool.install(|| {
         files
             .par_iter()
@@ -210,18 +206,9 @@ fn run_check(
             .collect()
     });
 
-    // Deterministic ordering
     outcomes.sort_by(|a, b| a.0.cmp(&b.0));
 
-    let file_outcomes: Vec<FileOutcome> = outcomes
-        .into_iter()
-        .map(|(_, o)| {
-            if !o.diagnostics.is_empty() {
-                has_diagnostics.store(true, Ordering::Relaxed);
-            }
-            o
-        })
-        .collect();
+    let file_outcomes: Vec<FileOutcome> = outcomes.into_iter().map(|(_, o)| o).collect();
 
     let has_any = file_outcomes.iter().any(|o| !o.diagnostics.is_empty());
     if has_any {
@@ -233,7 +220,7 @@ fn run_check(
         println!("{rendered}");
     }
 
-    if has_diagnostics.load(Ordering::Relaxed) {
+    if has_any {
         process::exit(1);
     }
     Ok(())
