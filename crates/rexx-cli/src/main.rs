@@ -40,7 +40,7 @@ fn help_text(version: &str, date: &str, bits: usize) -> String {
         r#"{ver}
 
 This is a Rexx linter and formatter for deterministic CLI and CI workflows.
-It is distributed under the terms {license} and comes with NO WARRANTY.
+It is distributed under the terms of the {license} license and comes with NO WARRANTY.
 See the LICENSE file for details.
 
 To run rexxlint:
