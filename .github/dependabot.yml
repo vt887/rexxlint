@@ -1,0 +1,36 @@
+version: 2
+updates:
+  # GitHub Actions — weekly, grouped by ecosystem
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "UTC"
+    groups:
+      github-actions:
+        patterns: ["*"]
+    labels: ["dependencies", "github-actions"]
+    open-pull-requests-limit: 5
+
+  # Cargo workspace
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:30"
+      timezone: "UTC"
+    groups:
+      # Patch and minor updates together to reduce noise
+      cargo-non-breaking:
+        update-types:
+          - "minor"
+          - "patch"
+    labels: ["dependencies", "rust"]
+    open-pull-requests-limit: 10
+    ignore:
+      # Ignore major bumps — review manually
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
