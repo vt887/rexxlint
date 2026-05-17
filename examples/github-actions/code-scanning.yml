@@ -1,0 +1,53 @@
+# Copy this file into .github/workflows/ in your own repository to enable
+# rexxlint findings in GitHub Code Scanning (Security → Code scanning alerts).
+#
+# Prerequisites:
+# - Your repository must have Code Scanning enabled
+#   (Settings → Security → Code scanning → Set up → Advanced).
+# - The workflow token needs security-events: write (set below).
+
+name: rexxlint
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  schedule:
+    - cron: "23 7 * * 1"   # weekly — Monday 07:23 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    name: rexxlint SARIF
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download rexxlint
+        run: |
+          curl -fsSL -o rexxlint.tar.gz \
+            https://github.com/vt887/rexxlint/releases/latest/download/rexxlint-linux-x86_64.tar.gz
+          tar -xzf rexxlint.tar.gz rexxlint
+          chmod +x rexxlint
+
+      - name: Run rexxlint (SARIF output)
+        # Exit 1 = lint findings — that is expected and handled by the upload step.
+        # Exit 2 = hard IO/parse error — let that propagate.
+        run: ./rexxlint check --output sarif . > rexxlint.sarif || [ $? -eq 1 ]
+
+      - name: Upload to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: rexxlint.sarif
+          category: rexxlint
