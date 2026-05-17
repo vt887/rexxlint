@@ -123,28 +123,28 @@ fn format_check_exits_one_when_files_need_formatting() {
 #[test]
 fn format_check_exits_zero_when_already_formatted() {
     let dir = tempdir().unwrap();
-    // A file that the formatter would not change.
-    write(dir.path(), "clean.rexx", "/* header */\nSAY 'hello'\n");
+    let path = write(dir.path(), "clean.rexx", "say 'hello'\n");
+
+    // First pass: format in-place to produce a guaranteed fixed-point.
+    rexxlint()
+        .args(["format", path.to_str().unwrap()])
+        .status()
+        .unwrap();
+
+    // Second pass: --check on an already-formatted file must exit 0.
     let out = rexxlint()
-        .args(["format", "--check", dir.path().to_str().unwrap()])
+        .args(["format", "--check", path.to_str().unwrap()])
         .output()
         .unwrap();
-    // If the formatter returns the same content, exit 0 and no "would reformat" message.
     let stdout = String::from_utf8_lossy(&out.stdout);
-    if out.status.success() {
-        assert!(
-            !stdout.contains("would reformat"),
-            "no reformat message expected; got: {stdout}"
-        );
-    }
-    // We accept either result depending on formatter behavior — the important
-    // invariant is that exit 1 implies "would reformat" in stdout.
-    if !out.status.success() {
-        assert!(
-            stdout.contains("would reformat"),
-            "exit 1 must emit 'would reformat'"
-        );
-    }
+    assert!(
+        out.status.success(),
+        "format --check on a fixed-point file must exit 0; got stdout: {stdout}"
+    );
+    assert!(
+        !stdout.contains("would reformat"),
+        "no reformat message expected on fixed-point file; got: {stdout}"
+    );
 }
 
 #[test]
