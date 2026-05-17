@@ -14,73 +14,119 @@ concurrency:
 permissions:
   contents: read
 
+# ── Formatting ────────────────────────────────────────────────────────────────
 jobs:
-  quality:
-    name: Rust Quality
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+# ── Clippy ────────────────────────────────────────────────────────────────────
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --all-targets --all-features -- -D warnings
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+  test:
+    name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --all
 
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
+# ── Benchmarks (non-blocking) ─────────────────────────────────────────────────
+  bench:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify benchmarks compile
+        run: cargo bench --no-run
 
-      - name: Cache Rust artifacts
-        uses: Swatinem/rust-cache@v2
-
-      - name: Format check
-        run: make fmt-check
-
-      - name: Lint
-        run: make lint
-
-      - name: Test
-        run: make test
-
-      - name: Build debug
-        run: make build
-
+# ── Portable C ────────────────────────────────────────────────────────────────
   portable:
     name: Portable C
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v6
       - name: Build and test portable-c
         run: make portable-all
 
+# ── SARIF Validation ──────────────────────────────────────────────────────────
+  sarif-validate:
+    name: SARIF Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [fmt, clippy, test]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build CLI
+        run: cargo build -p rexx-cli
+
+      - name: Generate SARIF from sample Rexx file
+        run: |
+          mkdir -p /tmp/sarif-test
+          printf 'say "missing header"\n' > /tmp/sarif-test/sample.rexx
+          ./target/debug/rexxlint check --output sarif /tmp/sarif-test > /tmp/rexxlint.sarif || [ $? -eq 1 ]
+
+      - name: Validate SARIF envelope
+        run: |
+          jq -e '
+            .version == "2.1.0" and
+            ((.runs | length) > 0) and
+            (.runs[0].tool.driver.name | type) == "string" and
+            (.runs[0].results | type) == "array"
+          ' /tmp/rexxlint.sarif
+
+# ── Package CLI artifact (CI smoke) ───────────────────────────────────────────
   package:
-    name: Package CLI
+    name: Package CLI (linux-x86_64)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [quality, portable]
+    needs: [fmt, clippy, test, portable]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
 
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Build release binary
+        run: cargo build --release -p rexx-cli
 
-      - name: Cache Rust artifacts
-        uses: Swatinem/rust-cache@v2
-
-      - name: Build release
-        run: make release
-
-      - name: Package artifact
+      - name: Assemble artifact
         run: |
           mkdir -p dist
-          tar -czf dist/rexxlint-linux-x86_64.tar.gz -C target/release rexxlint
+          cp LICENSE README.md target/release/rexxlint dist/
+          tar -czf dist/rexxlint-linux-x86_64.tar.gz \
+            -C dist rexxlint LICENSE README.md
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
-          name: rexxlint-${{ github.sha }}
-          path: dist/*
-          retention-days: 30
+          name: rexxlint-linux-x86_64-ci
+          path: dist/rexxlint-linux-x86_64.tar.gz
+          retention-days: 7
           if-no-files-found: error

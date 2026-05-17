@@ -19,9 +19,10 @@ for the full dependency graph and design rationale.
 | `rexx-ast` | AST node types shared between parser and rules |
 | `rexx-rules` | Lint rules R001–R010; each rule is an independent module |
 | `rexx-formatter` | Source formatter; reads AST/tokens and emits normalised source |
-| `rexx-config` | Formatting profiles (`mainframe-compatible`, `standard`, `minimal`) |
+| `rexx-config` | Formatting profiles (`mainframe-compatible`, `standard`, `minimal`) plus `[files]` exclude config |
 | `rexx-analyzer` | Orchestrates rules over a file or workspace |
-| `rexx-cli` | Binary entry-point; argument parsing, output rendering (text/JSON/SARIF) |
+| `rexx-walker` | Recursive file discovery (`.rexx`/`.rex`/`.rx`) with `.gitignore` and glob-exclude support |
+| `rexx-cli` | Binary entry-point; `check`/`format` subcommands, parallel execution, output rendering (text/JSON/SARIF) |
 | `rexx-lsp` | Language Server Protocol adapter (planned Phase 2) |
 
 ## Portable C layer

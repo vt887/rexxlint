@@ -1,0 +1,43 @@
+name: Code Scanning
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "17 6 * * 1"   # weekly — Monday 06:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  rexxlint:
+    name: rexxlint SARIF upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build rexxlint
+        run: cargo build --release -p rexx-cli
+
+      - name: Run rexxlint and emit SARIF
+        # exit 1 = findings (expected, handled below); exit 2 = IO error (propagates as failure)
+        run: ./target/release/rexxlint check --output sarif . > rexxlint.sarif || [ $? -eq 1 ]
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: rexxlint.sarif
+          category: rexxlint

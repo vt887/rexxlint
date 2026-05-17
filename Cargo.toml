@@ -10,13 +10,14 @@ members = [
   "crates/rexx-parser",
   "crates/rexx-rules",
   "crates/rexx-lsp",
+  "crates/rexx-walker",
 ]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0-alpha"
 edition = "2024"
-license = "MIT OR Apache-2.0"
+license = "Apache-2.0"
 
 [workspace.dependencies]
 anyhow = "1"
@@ -26,3 +27,9 @@ serde_json = "1"
 thiserror = "2"
 insta = "1"
 criterion = { version = "0.5", features = ["html_reports"] }
+ignore = "0.4"
+walkdir = "2"
+globset = "0.4"
+rayon = "1"
+similar = "2"
+tempfile = "3"
