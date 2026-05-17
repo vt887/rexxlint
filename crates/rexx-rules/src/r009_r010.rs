@@ -22,10 +22,7 @@ fn check_r009(ctx: &RuleContext, diags: &mut Vec<Diagnostic>) {
                     continue;
                 }
                 match &t.kind {
-                    TokenKind::Newline
-                    | TokenKind::Semicolon
-                    | TokenKind::LineComment(_)
-                    | TokenKind::BlockComment(_) => {}
+                    TokenKind::Newline | TokenKind::Continuation => {}
                     _ => {
                         substantive_after = true;
                         break;
@@ -72,16 +69,17 @@ fn check_r010(ctx: &RuleContext, diags: &mut Vec<Diagnostic>) {
         // Preference is for majority or uppercase
         let prefer_upper = upper_count >= lower_count;
         for (token, is_upper, is_lower) in keywords {
+            let end_col = token.col + token.text.len() as u32;
             if prefer_upper && !is_upper {
                 diags.push(
                     Diagnostic::warning(
                         "R010",
                         "Inconsistent keyword casing (expected uppercase)",
-                        rexx_diagnostics::Span::new(token.line, token.col, token.line, token.col),
+                        rexx_diagnostics::Span::new(token.line, token.col, token.line, end_col),
                     )
                     .with_fix(
                         token.text.to_ascii_uppercase(),
-                        rexx_diagnostics::Span::new(token.line, token.col, token.line, token.col),
+                        rexx_diagnostics::Span::new(token.line, token.col, token.line, end_col),
                     ),
                 );
             } else if !prefer_upper && !is_lower {
@@ -89,11 +87,11 @@ fn check_r010(ctx: &RuleContext, diags: &mut Vec<Diagnostic>) {
                     Diagnostic::warning(
                         "R010",
                         "Inconsistent keyword casing (expected lowercase)",
-                        rexx_diagnostics::Span::new(token.line, token.col, token.line, token.col),
+                        rexx_diagnostics::Span::new(token.line, token.col, token.line, end_col),
                     )
                     .with_fix(
                         token.text.to_ascii_lowercase(),
-                        rexx_diagnostics::Span::new(token.line, token.col, token.line, token.col),
+                        rexx_diagnostics::Span::new(token.line, token.col, token.line, end_col),
                     ),
                 );
             }

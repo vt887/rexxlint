@@ -8,7 +8,7 @@ use rayon::prelude::*;
 use rexx_analyzer::lint;
 use rexx_cli::{FileOutcome, render_json_multi, render_sarif_multi, render_text_multi};
 use rexx_config::resolve_config;
-use rexx_formatter::format_rexx_with_profile_name;
+use rexx_formatter::{apply_fixes, format_rexx_with_profile_name};
 use rexx_walker::{WalkOptions, discover};
 use similar::TextDiff;
 
@@ -110,6 +110,12 @@ enum Command {
         paths: Vec<PathBuf>,
         #[arg(long, value_enum, default_value = "text", value_name = "MODE")]
         output: OutputMode,
+        /// Apply safe auto-fixes and report remaining diagnostics
+        #[arg(long)]
+        fix: bool,
+        /// Apply safe auto-fixes silently (no diagnostic output)
+        #[arg(long, conflicts_with = "fix")]
+        fix_only: bool,
     },
     /// Format one or more Rexx files or directories
     Format {
@@ -118,6 +124,9 @@ enum Command {
         check: bool,
         #[arg(long)]
         diff: bool,
+        /// Also apply safe lint auto-fixes after formatting
+        #[arg(long)]
+        fix: bool,
         #[arg(long, default_value = "mainframe-compatible", value_name = "PROFILE")]
         profile: String,
     },
@@ -168,13 +177,19 @@ fn run() -> Result<()> {
     let respect_gitignore = !cli.no_ignore;
 
     match cli.command.unwrap() {
-        Command::Check { paths, output } => run_check(&paths, &output, respect_gitignore, &pool),
+        Command::Check {
+            paths,
+            output,
+            fix,
+            fix_only,
+        } => run_check(&paths, &output, fix, fix_only, respect_gitignore, &pool),
         Command::Format {
             paths,
             check,
             diff,
+            fix,
             profile,
-        } => run_format(&paths, check, diff, &profile, respect_gitignore, &pool),
+        } => run_format(&paths, check, diff, fix, &profile, respect_gitignore, &pool),
     }
 }
 
@@ -183,6 +198,8 @@ fn run() -> Result<()> {
 fn run_check(
     paths: &[PathBuf],
     output: &OutputMode,
+    apply_fix: bool,
+    fix_only: bool,
     respect_gitignore: bool,
     pool: &rayon::ThreadPool,
 ) -> Result<()> {
@@ -209,6 +226,41 @@ fn run_check(
     outcomes.sort_by(|a, b| a.0.cmp(&b.0));
 
     let file_outcomes: Vec<FileOutcome> = outcomes.into_iter().map(|(_, o)| o).collect();
+
+    // Apply fixes when requested (--fix or --fix-only).
+    if apply_fix || fix_only {
+        for outcome in &file_outcomes {
+            let has_fixes = outcome.diagnostics.iter().any(|d| d.fix.is_some());
+            if !has_fixes {
+                continue;
+            }
+            let source = match read_utf8_lossy(&outcome.path) {
+                Ok(s) => s,
+                Err(e) => {
+                    eprintln!(
+                        "warning: cannot apply fixes to {}: {e}",
+                        outcome.path.display()
+                    );
+                    continue;
+                }
+            };
+            let patched = apply_fixes(&source, &outcome.diagnostics);
+            if patched != source {
+                if let Err(e) = write_atomic(&outcome.path, &patched) {
+                    eprintln!(
+                        "error: could not write fixes to {}: {e}",
+                        outcome.path.display()
+                    );
+                } else if !fix_only {
+                    eprintln!("fixed: {}", outcome.path.display());
+                }
+            }
+        }
+    }
+
+    if fix_only {
+        return Ok(());
+    }
 
     let has_any = file_outcomes.iter().any(|o| !o.diagnostics.is_empty());
     if has_any {
@@ -256,6 +308,7 @@ fn run_format(
     paths: &[PathBuf],
     check: bool,
     show_diff: bool,
+    apply_lint_fixes: bool,
     profile: &str,
     respect_gitignore: bool,
     pool: &rayon::ThreadPool,
@@ -291,6 +344,25 @@ fn run_format(
             }
             if let Some(diff) = outcome.diff_text {
                 print!("{diff}");
+            }
+        }
+
+        // After formatting (which already wrote the file), apply lint fixes if requested.
+        if apply_lint_fixes && !check && !show_diff {
+            let source = match read_utf8_lossy(&outcome.path) {
+                Ok(s) => s,
+                Err(_) => continue,
+            };
+            let diagnostics = rexx_analyzer::lint(&source);
+            let patched = apply_fixes(&source, &diagnostics);
+            if patched != source {
+                match write_atomic(&outcome.path, &patched) {
+                    Ok(()) => {}
+                    Err(e) => eprintln!(
+                        "error: could not write fixes to {}: {e}",
+                        outcome.path.display()
+                    ),
+                }
             }
         }
     }

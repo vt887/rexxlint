@@ -2,13 +2,39 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum KeywordCasing {
+    #[default]
+    Upper,
+    Lower,
+    Preserve,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct FormattingProfile {
     pub name: String,
     pub line_length_soft: usize,
     pub line_length_hard: usize,
-    pub uppercase_keywords: bool,
     pub tabs_forbidden: bool,
+    #[serde(default = "default_indent_size")]
+    pub indent_size: usize,
+    #[serde(default = "default_max_blank_lines")]
+    pub max_blank_lines: usize,
+    #[serde(default = "default_true")]
+    pub insert_first_comment: bool,
+    #[serde(default)]
+    pub keyword_casing: KeywordCasing,
+}
+
+fn default_true() -> bool {
+    true
+}
+fn default_indent_size() -> usize {
+    4
+}
+fn default_max_blank_lines() -> usize {
+    1
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -40,8 +66,11 @@ pub fn mainframe_compatible() -> FormattingProfile {
         name: "mainframe-compatible".to_string(),
         line_length_soft: 72,
         line_length_hard: 80,
-        uppercase_keywords: true,
         tabs_forbidden: true,
+        indent_size: 4,
+        max_blank_lines: 1,
+        insert_first_comment: true,
+        keyword_casing: KeywordCasing::Upper,
     }
 }
 
@@ -50,8 +79,11 @@ pub fn standard() -> FormattingProfile {
         name: "standard".to_string(),
         line_length_soft: 100,
         line_length_hard: 200,
-        uppercase_keywords: false,
         tabs_forbidden: false,
+        indent_size: 4,
+        max_blank_lines: 1,
+        insert_first_comment: true,
+        keyword_casing: KeywordCasing::Lower,
     }
 }
 
@@ -60,8 +92,11 @@ pub fn minimal() -> FormattingProfile {
         name: "minimal".to_string(),
         line_length_soft: 200,
         line_length_hard: 200,
-        uppercase_keywords: false,
         tabs_forbidden: false,
+        indent_size: 4,
+        max_blank_lines: 2,
+        insert_first_comment: false,
+        keyword_casing: KeywordCasing::Preserve,
     }
 }
 
@@ -128,25 +163,56 @@ mod tests {
         fs::write(&config_path, "formatting.name = 'test'").unwrap();
 
         let found = find_config(&sub).unwrap();
-        assert_eq!(
-            found.canonicalize().unwrap(),
-            config_path.canonicalize().unwrap()
-        );
+        assert_eq!(found, config_path);
     }
 
     #[test]
-    fn test_load_config() {
+    fn test_load_profile_mainframe() {
+        let p = load_profile("mainframe-compatible").unwrap();
+        assert_eq!(p.keyword_casing, KeywordCasing::Upper);
+        assert!(p.tabs_forbidden);
+        assert_eq!(p.indent_size, 4);
+        assert_eq!(p.max_blank_lines, 1);
+        assert!(p.insert_first_comment);
+    }
+
+    #[test]
+    fn test_load_profile_standard() {
+        let p = load_profile("standard").unwrap();
+        assert_eq!(p.keyword_casing, KeywordCasing::Lower);
+        assert!(!p.tabs_forbidden);
+        assert_eq!(p.indent_size, 4);
+    }
+
+    #[test]
+    fn test_load_profile_minimal() {
+        let p = load_profile("minimal").unwrap();
+        assert_eq!(p.keyword_casing, KeywordCasing::Preserve);
+        assert!(!p.tabs_forbidden);
+        assert_eq!(p.max_blank_lines, 2);
+        assert!(!p.insert_first_comment);
+    }
+
+    #[test]
+    fn test_unknown_profile() {
+        assert!(matches!(
+            load_profile("nonexistent"),
+            Err(ConfigError::UnknownProfile(_))
+        ));
+    }
+
+    #[test]
+    fn test_keyword_casing_serde() {
         let dir = tempdir().unwrap();
         let config_path = dir.path().join("rexxlint.toml");
-        fs::write(&config_path, "[formatting]\nname = 'custom'\nline_length_soft = 120\nline_length_hard = 140\nuppercase_keywords = true\ntabs_forbidden = false").unwrap();
-
+        fs::write(
+            &config_path,
+            "[formatting]\nname = \"custom\"\nline_length_soft = 80\nline_length_hard = 100\ntabs_forbidden = false\nkeyword_casing = \"lower\"\n",
+        )
+        .unwrap();
         let config = load_config(&config_path).unwrap();
         let fmt = config.formatting.unwrap();
-        assert_eq!(fmt.name, "custom");
-        assert_eq!(fmt.line_length_soft, 120);
-        assert_eq!(fmt.line_length_hard, 140);
-        assert!(fmt.uppercase_keywords);
-        assert!(!fmt.tabs_forbidden);
+        assert_eq!(fmt.keyword_casing, KeywordCasing::Lower);
     }
 
     #[test]

@@ -17,6 +17,15 @@ expression: out
             "start_col": 1,
             "end_line": 1,
             "end_col": 1
+          },
+          "fix": {
+            "replacement": "/* The first line of a REXX exec must always be a comment. */\n",
+            "span": {
+              "start_line": 1,
+              "start_col": 1,
+              "end_line": 1,
+              "end_col": 1
+            }
           }
         },
         {
@@ -27,7 +36,7 @@ expression: out
             "start_line": 1,
             "start_col": 1,
             "end_line": 1,
-            "end_col": 1
+            "end_col": 4
           },
           "fix": {
             "replacement": "SAY",
@@ -35,7 +44,7 @@ expression: out
               "start_line": 1,
               "start_col": 1,
               "end_line": 1,
-              "end_col": 1
+              "end_col": 4
             }
           }
         },
@@ -58,7 +67,7 @@ expression: out
             "start_line": 4,
             "start_col": 1,
             "end_line": 4,
-            "end_col": 1
+            "end_col": 4
           },
           "fix": {
             "replacement": "SAY",
@@ -66,7 +75,7 @@ expression: out
               "start_line": 4,
               "start_col": 1,
               "end_line": 4,
-              "end_col": 1
+              "end_col": 4
             }
           }
         }
