@@ -92,7 +92,7 @@ jobs:
         run: |
           mkdir -p /tmp/sarif-test
           printf 'say "missing header"\n' > /tmp/sarif-test/sample.rexx
-          ./target/debug/rexxlint check --output sarif /tmp/sarif-test > /tmp/rexxlint.sarif || true
+          ./target/debug/rexxlint check --output sarif /tmp/sarif-test > /tmp/rexxlint.sarif || [ $? -eq 1 ]
 
       - name: Validate SARIF envelope
         run: |
