@@ -1,32 +1,89 @@
+use std::path::PathBuf;
+
 use rexx_diagnostics::{Diagnostic, Severity};
 use serde::Serialize;
 
+// ── Public data model ─────────────────────────────────────────────────────────
+
+/// Per-file result produced by the lint/format pipeline.
+#[derive(Debug)]
+pub struct FileOutcome {
+    pub path: PathBuf,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+// ── Text rendering ────────────────────────────────────────────────────────────
+
 pub fn render_text(path: &str, diagnostics: &[Diagnostic]) -> String {
-    diagnostics
+    render_text_multi(&[FileOutcome {
+        path: PathBuf::from(path),
+        diagnostics: diagnostics.to_vec(),
+    }])
+}
+
+pub fn render_text_multi(outcomes: &[FileOutcome]) -> String {
+    outcomes
         .iter()
-        .map(|d| {
-            format!(
-                "{path}:{}:{} {} {}",
-                d.span.start_line, d.span.start_col, d.code, d.message
-            )
+        .flat_map(|o| {
+            let path = o.path.to_string_lossy().into_owned();
+            o.diagnostics.iter().map(move |d| {
+                format!(
+                    "{}:{}:{} {} {}",
+                    path, d.span.start_line, d.span.start_col, d.code, d.message
+                )
+            })
         })
         .collect::<Vec<_>>()
         .join("\n")
 }
 
+// ── JSON rendering ────────────────────────────────────────────────────────────
+
 pub fn render_json(path: &str, diagnostics: &[Diagnostic]) -> Result<String, serde_json::Error> {
+    render_json_multi(&[FileOutcome {
+        path: PathBuf::from(path),
+        diagnostics: diagnostics.to_vec(),
+    }])
+}
+
+pub fn render_json_multi(outcomes: &[FileOutcome]) -> Result<String, serde_json::Error> {
     #[derive(Serialize)]
-    struct JsonOutput<'a> {
-        file: &'a str,
+    struct JsonFile<'a> {
+        file: String,
         diagnostics: &'a [Diagnostic],
     }
+
+    #[derive(Serialize)]
+    struct JsonOutput<'a> {
+        schema_version: u32,
+        files: Vec<JsonFile<'a>>,
+    }
+
+    let files = outcomes
+        .iter()
+        .filter(|o| !o.diagnostics.is_empty())
+        .map(|o| JsonFile {
+            file: o.path.to_string_lossy().into_owned(),
+            diagnostics: &o.diagnostics,
+        })
+        .collect();
+
     serde_json::to_string_pretty(&JsonOutput {
-        file: path,
-        diagnostics,
+        schema_version: 1,
+        files,
     })
 }
 
+// ── SARIF rendering ───────────────────────────────────────────────────────────
+
 pub fn render_sarif(path: &str, diagnostics: &[Diagnostic]) -> Result<String, serde_json::Error> {
+    render_sarif_multi(&[FileOutcome {
+        path: PathBuf::from(path),
+        diagnostics: diagnostics.to_vec(),
+    }])
+}
+
+pub fn render_sarif_multi(outcomes: &[FileOutcome]) -> Result<String, serde_json::Error> {
     let rules = vec![
         rule("R001", "Missing first-line comment", "error"),
         rule("R002", "Unclosed block comment", "error"),
@@ -44,29 +101,33 @@ pub fn render_sarif(path: &str, diagnostics: &[Diagnostic]) -> Result<String, se
         ),
     ];
 
-    let results = diagnostics
+    let results: Vec<SarifResult<'_>> = outcomes
         .iter()
-        .map(|d| SarifResult {
-            rule_id: &d.code,
-            level: severity_to_level(d.severity),
-            message: SarifMessage {
-                text: d.message.clone(),
-            },
-            locations: vec![SarifLocation {
-                physical_location: SarifPhysicalLocation {
-                    artifact_location: SarifArtifactLocation {
-                        uri: path.to_string(),
-                    },
-                    region: SarifRegion {
-                        start_line: d.span.start_line as usize,
-                        start_column: d.span.start_col as usize,
-                    },
+        .flat_map(|o| {
+            let path_str = o.path.to_string_lossy().into_owned();
+            o.diagnostics.iter().map(move |d| SarifResult {
+                rule_id: &d.code,
+                level: severity_to_level(d.severity),
+                message: SarifMessage {
+                    text: d.message.clone(),
                 },
-            }],
+                locations: vec![SarifLocation {
+                    physical_location: SarifPhysicalLocation {
+                        artifact_location: SarifArtifactLocation {
+                            uri: path_str.clone(),
+                        },
+                        region: SarifRegion {
+                            start_line: d.span.start_line as usize,
+                            start_column: d.span.start_col as usize,
+                        },
+                    },
+                }],
+            })
         })
-        .collect::<Vec<_>>();
+        .collect();
 
     let sarif = Sarif {
+        schema_version: 1,
         version: "2.1.0",
         runs: vec![SarifRun {
             tool: SarifTool {
@@ -81,6 +142,8 @@ pub fn render_sarif(path: &str, diagnostics: &[Diagnostic]) -> Result<String, se
 
     serde_json::to_string_pretty(&sarif)
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 fn severity_to_level(severity: Severity) -> &'static str {
     match severity {
@@ -103,8 +166,11 @@ fn rule(id: &'static str, name: &'static str, level: &'static str) -> SarifRule<
     }
 }
 
+// ── SARIF types ───────────────────────────────────────────────────────────────
+
 #[derive(Serialize)]
 struct Sarif<'a> {
+    schema_version: u32,
     version: &'a str,
     runs: Vec<SarifRun<'a>>,
 }

@@ -9,15 +9,28 @@ Cross-platform Rexx linter/formatter with deterministic diagnostics and CI-frien
 - `R003` unmatched `DO/END`
 - `R004` unmatched `SELECT/END`
 - `R007` unsafe `INTERPRET`
-- `--format`, `--fix`
+- Multi-file / directory scanning with `.gitignore` support
+- `check` and `format` subcommands
 - `--output text|json|sarif`
 
 ## Usage
 
 ```bash
-cargo run -p rexx-cli -- path/to/file.rexx
-cargo run -p rexx-cli -- --format path/to/file.rexx
-cargo run -p rexx-cli -- --fix --output json path/to/file.rexx
+# Lint one file, a directory, or multiple paths
+cargo run -p rexx-cli -- check path/to/file.rexx
+cargo run -p rexx-cli -- check src/ --output json
+cargo run -p rexx-cli -- check src/ --output sarif
+
+# Format — in-place rewrite
+cargo run -p rexx-cli -- format src/
+
+# Format — dry-run modes (never touch disk)
+cargo run -p rexx-cli -- format --check src/   # exit 1 if any file would change
+cargo run -p rexx-cli -- format --diff   src/  # print unified diff and exit 1
+
+# Global options
+cargo run -p rexx-cli -- --no-ignore check src/ # ignore .gitignore rules
+cargo run -p rexx-cli -- --jobs 1    check src/ # disable parallelism
 ```
 
 ## Validate

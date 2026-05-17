@@ -12,9 +12,17 @@ pub struct FormattingProfile {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct FilesConfig {
+    #[serde(default)]
+    pub exclude: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RexxLintConfig {
     #[serde(default)]
     pub formatting: Option<FormattingProfile>,
+    #[serde(default)]
+    pub files: Option<FilesConfig>,
 }
 
 #[derive(Debug, Error)]
@@ -139,5 +147,19 @@ mod tests {
         assert_eq!(fmt.line_length_hard, 140);
         assert!(fmt.uppercase_keywords);
         assert!(!fmt.tabs_forbidden);
+    }
+
+    #[test]
+    fn test_files_config() {
+        let dir = tempdir().unwrap();
+        let config_path = dir.path().join("rexxlint.toml");
+        fs::write(
+            &config_path,
+            "[files]\nexclude = [\"vendor/**\", \"generated/**\"]\n",
+        )
+        .unwrap();
+        let config = load_config(&config_path).unwrap();
+        let files = config.files.unwrap();
+        assert_eq!(files.exclude, vec!["vendor/**", "generated/**"]);
     }
 }
