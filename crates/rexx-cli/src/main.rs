@@ -1,8 +1,9 @@
 use std::fs;
+use std::io::Read as _;
 use std::path::{Path, PathBuf};
 use std::process;
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand, ValueEnum};
 use rayon::prelude::*;
 use rexx_analyzer::lint;
@@ -58,11 +59,15 @@ Common switches:
 
 Check switches:
   --output=MODE              output mode: text|json|sarif (default: text)
+  --stdin                    read source from stdin instead of files
+  --path=PATH                virtual file path reported in output (default: <stdin>)
 
 Format switches:
   --profile=PROFILE          formatting profile: standard|mainframe-compatible|minimal
   --check                    exit 1 if any file would be reformatted (no writes)
   --diff                     show unified diff for each file that would change
+  --stdin                    read source from stdin, write formatted output to stdout
+  --path=PATH                virtual file path reported in diff output (default: <stdin>)
 
 Examples:
   rexxlint check .
@@ -72,6 +77,10 @@ Examples:
   rexxlint format --check .
   rexxlint format --diff src/
   rexxlint format --profile=standard src/main.rexx
+
+  # Stdin mode (editor integrations)
+  cat file.rexx | rexxlint check --stdin --output json
+  cat file.rexx | rexxlint format --stdin --path file.rexx
 "#,
         ver = version_line(version, date, bits),
     )
@@ -116,6 +125,12 @@ enum Command {
         /// Apply safe auto-fixes silently (no diagnostic output)
         #[arg(long, conflicts_with = "fix")]
         fix_only: bool,
+        /// Read source from stdin instead of file paths
+        #[arg(long)]
+        stdin: bool,
+        /// Virtual file path used in diagnostic output when reading from stdin
+        #[arg(long, value_name = "PATH")]
+        path: Option<String>,
     },
     /// Format one or more Rexx files or directories
     Format {
@@ -129,6 +144,12 @@ enum Command {
         fix: bool,
         #[arg(long, default_value = "mainframe-compatible", value_name = "PROFILE")]
         profile: String,
+        /// Read source from stdin and write formatted output to stdout
+        #[arg(long)]
+        stdin: bool,
+        /// Virtual file path used in diff output when reading from stdin
+        #[arg(long, value_name = "PATH")]
+        path: Option<String>,
     },
 }
 
@@ -182,14 +203,41 @@ fn run() -> Result<()> {
             output,
             fix,
             fix_only,
-        } => run_check(&paths, &output, fix, fix_only, respect_gitignore, &pool),
+            stdin,
+            path,
+        } => {
+            if stdin {
+                if fix || fix_only {
+                    bail!("--fix / --fix-only cannot be used with --stdin (no file to write back)");
+                }
+                if !paths.is_empty() {
+                    bail!("positional paths cannot be combined with --stdin");
+                }
+                let virtual_path = path.unwrap_or_else(|| "<stdin>".to_string());
+                run_check_stdin(&virtual_path, &output)
+            } else {
+                run_check(&paths, &output, fix, fix_only, respect_gitignore, &pool)
+            }
+        }
         Command::Format {
             paths,
             check,
             diff,
             fix,
             profile,
-        } => run_format(&paths, check, diff, fix, &profile, respect_gitignore, &pool),
+            stdin,
+            path,
+        } => {
+            if stdin {
+                if !paths.is_empty() {
+                    bail!("positional paths cannot be combined with --stdin");
+                }
+                let virtual_path = path.unwrap_or_else(|| "<stdin>".to_string());
+                run_format_stdin(&virtual_path, check, diff, &profile)
+            } else {
+                run_format(&paths, check, diff, fix, &profile, respect_gitignore, &pool)
+            }
+        }
     }
 }
 
@@ -293,6 +341,77 @@ fn lint_file(path: &Path) -> FileOutcome {
         path: path.to_path_buf(),
         diagnostics: lint(&source),
     }
+}
+
+// ── stdin ─────────────────────────────────────────────────────────────────────
+
+fn read_stdin() -> Result<String> {
+    let mut bytes = Vec::new();
+    std::io::stdin()
+        .lock()
+        .read_to_end(&mut bytes)
+        .context("failed to read stdin")?;
+    match String::from_utf8(bytes) {
+        Ok(s) => Ok(s),
+        Err(e) => {
+            eprintln!(
+                "warning: stdin contains invalid UTF-8 — processing with replacement characters"
+            );
+            Ok(String::from_utf8_lossy(e.as_bytes()).into_owned())
+        }
+    }
+}
+
+fn run_check_stdin(virtual_path: &str, output: &OutputMode) -> Result<()> {
+    let source = read_stdin()?;
+    let diagnostics = lint(&source);
+    let outcomes = [FileOutcome {
+        path: PathBuf::from(virtual_path),
+        diagnostics: diagnostics.clone(),
+    }];
+    let has_any = !diagnostics.is_empty();
+    if has_any {
+        let rendered = match output {
+            OutputMode::Text => render_text_multi(&outcomes),
+            OutputMode::Json => render_json_multi(&outcomes)?,
+            OutputMode::Sarif => render_sarif_multi(&outcomes)?,
+        };
+        println!("{rendered}");
+        process::exit(1);
+    }
+    Ok(())
+}
+
+fn run_format_stdin(virtual_path: &str, check: bool, show_diff: bool, profile: &str) -> Result<()> {
+    let source = read_stdin()?;
+    let formatted = match format_rexx_with_profile_name(&source, profile) {
+        Ok(f) => f,
+        Err(e) => bail!("formatting failed: {e}"),
+    };
+
+    if check {
+        if formatted != source {
+            println!("would reformat: {virtual_path}");
+            process::exit(1);
+        }
+        return Ok(());
+    }
+
+    if show_diff {
+        if formatted != source {
+            let diff = TextDiff::from_lines(&source, &formatted);
+            let hunks = diff
+                .unified_diff()
+                .header(virtual_path, virtual_path)
+                .to_string();
+            print!("{hunks}");
+            process::exit(1);
+        }
+        return Ok(());
+    }
+
+    print!("{formatted}");
+    Ok(())
 }
 
 // ── format ────────────────────────────────────────────────────────────────────

@@ -92,3 +92,25 @@ Run the corpus locally:
 ```bash
 cargo test -p rexx-formatter --test corpus_idempotency
 ```
+
+## Stdin mode
+
+The formatter can read from stdin and write to stdout — no temp files, no disk writes.
+This is the recommended integration pattern for editors and CI pre-commit hooks.
+
+```bash
+# Format stdin, write formatted source to stdout
+cat file.rexx | rexxlint format --stdin
+
+# Provide the real filename for diff headers and error messages
+cat file.rexx | rexxlint format --stdin --path file.rexx
+
+# Check whether stdin would be reformatted (exit 1 = would change)
+cat file.rexx | rexxlint format --stdin --check
+
+# Show a unified diff without touching any file
+cat file.rexx | rexxlint format --stdin --diff --path file.rexx
+```
+
+`--path` sets the virtual file path used in `--diff` output and error messages.
+It does not affect which profile is loaded (profile is still selected with `--profile`).

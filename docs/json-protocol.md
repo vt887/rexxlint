@@ -47,6 +47,9 @@ reject or warn on unexpected values rather than silently misparse.
 - A clean file produces `"diagnostics": []`, not the absence of the key.
 - `span` columns are byte-indexed UTF-8 offsets, 1-based.
 - `code` values match the rule identifiers in [`docs/rules/`](rules/).
+- When invoked with `--stdin`, `files[0].file` is `"<stdin>"` by default.
+  Pass `--path <virtual-path>` to override it with the real file name
+  (recommended for editor integrations so gutter markers resolve correctly).
 
 ## Formatter schema (`format --output json`)
 

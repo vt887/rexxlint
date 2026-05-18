@@ -10,7 +10,7 @@ The plugin should run `rexxlint check` on the file content. To avoid disk I/O an
 
 **Command**:
 ```bash
-rexxlint check --stdin --output json
+rexxlint check --stdin --output json --path "$VIRTUAL_FILE_PATH"
 ```
 
 **Input**: Send the current editor content to `stdin`.
@@ -47,10 +47,12 @@ The plugin should implement the `FormattingService` or `AsyncDocumentFormattingS
 
 **Command**:
 ```bash
-rexxlint format --stdin
+rexxlint format --stdin --path "$VIRTUAL_FILE_PATH"
 ```
 
 **Input**: Send the current editor content to `stdin`.
+
+**`--path`**: Pass the editor's virtual file path so that diagnostic spans and diff headers reference the correct filename. If omitted, defaults to `<stdin>`.
 
 **Output**: The formatted source code on `stdout`.
 
