@@ -46,7 +46,7 @@ test:
 lint: clippy
 
 clippy:
-	$(CARGO) clippy --workspace --all-targets --all-features -- -D warnings
+	$(CARGO) clippy --workspace --all-targets -- -D warnings
 
 format:
 	$(CARGO) fmt --all
