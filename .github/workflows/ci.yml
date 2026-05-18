@@ -67,7 +67,7 @@ jobs:
           shared-key: "rust"
           save-if: false          # читаємо кеш із check, не перезаписуємо
       - name: Verify benchmarks compile
-        run: cargo bench --no-run
+        run: cargo bench -p rexx-bench --no-run
 
 # ── SARIF Validation ──────────────────────────────────────────────────────────
   sarif-validate:

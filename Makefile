@@ -3,7 +3,7 @@ SHELL := /bin/sh
 CARGO ?= cargo
 PORTABLE_DIR ?= portable-c
 
-.PHONY: help all ci clean build release run test lint format fmt-check clippy check \
+.PHONY: help all ci clean build release run test bench lint format fmt-check clippy check \
         portable-build portable-test portable-clean portable-all
 
 help:
@@ -14,7 +14,8 @@ help:
 	@echo "  make build          - build debug workspace"
 	@echo "  make release        - build release rexxlint"
 	@echo "  make run            - run target/debug/rexxlint"
-	@echo "  make test           - run all Rust tests"
+	@echo "  make test           - run all Rust tests (excludes benchmarks)"
+	@echo "  make bench          - run criterion benchmarks"
 	@echo "  make lint           - run clippy with -D warnings"
 	@echo "  make format         - apply rustfmt"
 	@echo "  make fmt-check      - verify rustfmt"
@@ -24,7 +25,7 @@ help:
 	@echo "  make portable-clean - clean C99 artifacts"
 	@echo "  make portable-all   - build + test C99 fallback"
 
-all: fmt-check lint test build
+all: fmt-check lint test
 
 ci: fmt-check lint test release portable-all
 
@@ -42,6 +43,9 @@ run:
 
 test:
 	$(CARGO) test --workspace
+
+bench:
+	$(CARGO) bench -p rexx-bench
 
 lint: clippy
 

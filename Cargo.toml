@@ -11,11 +11,28 @@ members = [
   "crates/rexx-rules",
   "crates/rexx-lsp",
   "crates/rexx-walker",
+  "crates/rexx-bench",
+]
+# rexx-bench is excluded from default test/check/build runs because it
+# pulls in criterion's ~120-crate dependency tree. Use `cargo bench` or
+# `cargo test -p rexx-bench` to run benchmarks explicitly.
+default-members = [
+  "crates/rexx-ast",
+  "crates/rexx-diagnostics",
+  "crates/rexx-analyzer",
+  "crates/rexx-formatter",
+  "crates/rexx-cli",
+  "crates/rexx-config",
+  "crates/rexx-lexer",
+  "crates/rexx-parser",
+  "crates/rexx-rules",
+  "crates/rexx-lsp",
+  "crates/rexx-walker",
 ]
 resolver = "2"
 
 [workspace.package]
-version = "0.2.0-alpha"
+version = "0.3.0-alpha"
 edition = "2024"
 license = "Apache-2.0"
 
@@ -26,10 +43,9 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
 insta = "1"
-criterion = { version = "0.5", features = ["html_reports"] }
 ignore = "0.4"
 walkdir = "2"
 globset = "0.4"
 rayon = "1"
-similar = "2"
+similar = { version = "2", features = ["inline"] }
 tempfile = "3"

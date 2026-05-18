@@ -13,10 +13,4 @@ rexx-lexer = { path = "../rexx-lexer" }
 
 [dev-dependencies]
 insta = "1"
-criterion = { version = "0.5", features = ["html_reports"] }
 rexx-analyzer = { path = "../rexx-analyzer" }
-
-[[bench]]
-name = "lint"
-harness = false
-path = "../../benches/lint.rs"
