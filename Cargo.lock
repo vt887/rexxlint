@@ -658,7 +658,7 @@ checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 
 [[package]]
 name = "rexx-analyzer"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
  "rexx-diagnostics",
  "rexx-rules",
@@ -666,19 +666,32 @@ dependencies = [
 
 [[package]]
 name = "rexx-ast"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
  "rexx-diagnostics",
  "rexx-lexer",
 ]
 
 [[package]]
+name = "rexx-bench"
+version = "0.4.0-alpha"
+dependencies = [
+ "criterion",
+ "rayon",
+ "rexx-analyzer",
+ "rexx-formatter",
+ "rexx-lexer",
+ "rexx-parser",
+ "rexx-walker",
+ "tempfile",
+]
+
+[[package]]
 name = "rexx-cli"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
  "anyhow",
  "clap",
- "criterion",
  "insta",
  "rayon",
  "rexx-analyzer",
@@ -694,7 +707,7 @@ dependencies = [
 
 [[package]]
 name = "rexx-config"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
  "serde",
  "tempfile",
@@ -704,16 +717,15 @@ dependencies = [
 
 [[package]]
 name = "rexx-diagnostics"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "rexx-formatter"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
- "criterion",
  "rexx-ast",
  "rexx-config",
  "rexx-diagnostics",
@@ -723,21 +735,19 @@ dependencies = [
 
 [[package]]
 name = "rexx-lexer"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
- "criterion",
  "insta",
 ]
 
 [[package]]
 name = "rexx-lsp"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 
 [[package]]
 name = "rexx-parser"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
- "criterion",
  "insta",
  "rexx-ast",
  "rexx-diagnostics",
@@ -746,9 +756,8 @@ dependencies = [
 
 [[package]]
 name = "rexx-rules"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
- "criterion",
  "insta",
  "rexx-analyzer",
  "rexx-ast",
@@ -760,9 +769,8 @@ dependencies = [
 
 [[package]]
 name = "rexx-walker"
-version = "0.2.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
- "criterion",
  "globset",
  "ignore",
  "tempfile",
