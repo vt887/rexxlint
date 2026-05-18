@@ -82,16 +82,10 @@ pub fn apply_fixes(source: &str, diagnostics: &[Diagnostic]) -> String {
 fn resolve<'a>(source: &str, fix: &'a Fix) -> Option<ResolvedFix<'a>> {
     let start = to_byte_offset(source, fix.span.start_line, fix.span.start_col)?;
 
-    // If end == start it is an insertion (nothing deleted, replacement prepended).
-    // Otherwise compute end byte offset.
     let end = if fix.span.end_line == fix.span.start_line && fix.span.end_col == fix.span.start_col
     {
-        // Point span: the fix replaces the token beginning at `start` whose
-        // length matches the replacement length (same-length keyword casing,
-        // or pure insertion when replacement is longer).
-        // Use replacement length as the region length so we never leave behind
-        // the original text.
-        start + fix.replacement.len().min(source.len() - start)
+        // Point span: pure insertion — replace zero bytes at `start`.
+        start
     } else {
         to_byte_offset(source, fix.span.end_line, fix.span.end_col)?
     };
@@ -151,7 +145,8 @@ mod tests {
         let comment = "/* REXX */\n";
         let diag = diag_with_fix(comment, 1, 1, 1, 1);
         let result = apply_fixes(src, &[diag]);
-        assert!(result.starts_with("/* REXX */\n"), "got: {result:?}");
+        // Insertion must prepend without consuming any original content.
+        assert_eq!(result, "/* REXX */\nsay 'hi'\n", "got: {result:?}");
     }
 
     #[test]
