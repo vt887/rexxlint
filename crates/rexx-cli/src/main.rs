@@ -348,7 +348,12 @@ fn run_format(
         files
             .par_iter()
             .map(|path| {
-                let outcome = format_file(path, check || show_diff, show_diff, resolved_profile.clone());
+                let outcome = format_file(
+                    path,
+                    check || show_diff,
+                    show_diff,
+                    resolved_profile.clone(),
+                );
                 (path.clone(), outcome)
             })
             .collect()
@@ -394,7 +399,12 @@ fn run_format(
     Ok(())
 }
 
-fn format_file(path: &Path, dry_run: bool, show_diff: bool, profile: FormattingProfile) -> FormatOutcome {
+fn format_file(
+    path: &Path,
+    dry_run: bool,
+    show_diff: bool,
+    profile: FormattingProfile,
+) -> FormatOutcome {
     let source = match read_utf8_lossy(path) {
         Ok(s) => s,
         Err(e) => {
