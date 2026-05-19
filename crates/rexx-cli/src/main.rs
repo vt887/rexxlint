@@ -8,8 +8,8 @@ use clap::{Parser, Subcommand, ValueEnum};
 use rayon::prelude::*;
 use rexx_analyzer::lint;
 use rexx_cli::{FileOutcome, render_json_multi, render_sarif_multi, render_text_multi};
-use rexx_config::resolve_config;
-use rexx_formatter::{apply_fixes, format_rexx_with_profile_name};
+use rexx_config::{FormattingProfile, load_profile, resolve_config};
+use rexx_formatter::{apply_fixes, format_rexx_with_profile};
 use rexx_walker::{WalkOptions, discover};
 use similar::TextDiff;
 
@@ -59,6 +59,8 @@ Common switches:
 
 Check switches:
   --output=MODE              output mode: text|json|sarif (default: text)
+  --fix                      apply safe auto-fixes and report remaining diagnostics
+  --fix-only                 apply safe auto-fixes silently (no diagnostic output)
   --stdin                    read source from stdin instead of files
   --path=PATH                virtual file path reported in output (default: <stdin>)
 
@@ -66,6 +68,7 @@ Format switches:
   --profile=PROFILE          formatting profile: standard|mainframe-compatible|minimal
   --check                    exit 1 if any file would be reformatted (no writes)
   --diff                     show unified diff for each file that would change
+  --fix                      also apply safe lint auto-fixes after formatting
   --stdin                    read source from stdin, write formatted output to stdout
   --path=PATH                virtual file path reported in diff output (default: <stdin>)
 
@@ -273,7 +276,53 @@ fn run_check(
 
     outcomes.sort_by(|a, b| a.0.cmp(&b.0));
 
-    let file_outcomes: Vec<FileOutcome> = outcomes.into_iter().map(|(_, o)| o).collect();
+    let mut file_outcomes: Vec<FileOutcome> = outcomes.into_iter().map(|(_, o)| o).collect();
+
+    // Apply fixes when requested (--fix or --fix-only).
+    let mut had_write_error = false;
+    if apply_fix || fix_only {
+        for outcome in &mut file_outcomes {
+            let has_fixes = outcome.diagnostics.iter().any(|d| d.fix.is_some());
+            if !has_fixes {
+                continue;
+            }
+            let source = match read_utf8_lossy(&outcome.path) {
+                Ok(s) => s,
+                Err(e) => {
+                    eprintln!(
+                        "warning: cannot apply fixes to {}: {e}",
+                        outcome.path.display()
+                    );
+                    continue;
+                }
+            };
+            let patched = apply_fixes(&source, &outcome.diagnostics);
+            if patched != source {
+                if let Err(e) = write_atomic(&outcome.path, &patched) {
+                    eprintln!(
+                        "error: could not write fixes to {}: {e}",
+                        outcome.path.display()
+                    );
+                    had_write_error = true;
+                } else {
+                    // Re-lint the patched content so the report reflects remaining issues,
+                    // not the stale pre-fix diagnostics.
+                    outcome.diagnostics = lint(&patched);
+                    if !fix_only {
+                        eprintln!("fixed: {}", outcome.path.display());
+                    }
+                }
+            }
+        }
+    }
+
+    if had_write_error {
+        process::exit(2);
+    }
+
+    if fix_only {
+        return Ok(());
+    }
 
     // Apply fixes when requested (--fix or --fix-only).
     if apply_fix || fix_only {
@@ -433,7 +482,14 @@ fn run_format(
     pool: &rayon::ThreadPool,
 ) -> Result<()> {
     let config = resolve_config(&std::env::current_dir()?);
-    let excludes = config.files.map(|f| f.exclude).unwrap_or_default();
+    let excludes = config.files.clone().map(|f| f.exclude).unwrap_or_default();
+
+    // TOML [formatting] section takes precedence over --profile flag.
+    let resolved_profile = if let Some(fmt) = config.formatting {
+        fmt
+    } else {
+        load_profile(profile).context("invalid formatting profile")?
+    };
 
     let opts = WalkOptions {
         excludes,
@@ -446,7 +502,12 @@ fn run_format(
         files
             .par_iter()
             .map(|path| {
-                let outcome = format_file(path, check || show_diff, show_diff, profile);
+                let outcome = format_file(
+                    path,
+                    check || show_diff,
+                    show_diff,
+                    resolved_profile.clone(),
+                );
                 (path.clone(), outcome)
             })
             .collect()
@@ -492,7 +553,12 @@ fn run_format(
     Ok(())
 }
 
-fn format_file(path: &Path, dry_run: bool, show_diff: bool, profile: &str) -> FormatOutcome {
+fn format_file(
+    path: &Path,
+    dry_run: bool,
+    show_diff: bool,
+    profile: FormattingProfile,
+) -> FormatOutcome {
     let source = match read_utf8_lossy(path) {
         Ok(s) => s,
         Err(e) => {
@@ -505,17 +571,7 @@ fn format_file(path: &Path, dry_run: bool, show_diff: bool, profile: &str) -> Fo
         }
     };
 
-    let formatted = match format_rexx_with_profile_name(&source, profile) {
-        Ok(f) => f,
-        Err(e) => {
-            eprintln!("error: formatting failed for {}: {e}", path.display());
-            return FormatOutcome {
-                path: path.to_path_buf(),
-                diff_text: None,
-                would_change: false,
-            };
-        }
-    };
+    let formatted = format_rexx_with_profile(&source, profile);
 
     if formatted == source {
         return FormatOutcome {

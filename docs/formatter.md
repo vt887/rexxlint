@@ -9,7 +9,7 @@ uses, so formatting is always syntactically aware.
 | Guarantee | Detail |
 |-----------|--------|
 | **Idempotent** | `format(format(x)) == format(x)` for every input |
-| **Non-destructive** | Comments and string literals are preserved exactly |
+| **Non-destructive** | Comments are preserved exactly; string literal *content* is preserved but delimiters are normalized to single quotes (`'`) |
 | **Deterministic** | Same input always produces the same output |
 | **Safe for legacy code** | Malformed input is formatted best-effort; files are never corrupted |
 | **Atomic writes** | Files are written via a temp-file + rename; a crash mid-write leaves the original intact |
@@ -41,7 +41,8 @@ rexxlint format --profile=standard src/
 | `standard` | 4 spaces | lower | 1 | allowed |
 | `minimal` | 4 spaces | preserve | 2 | allowed |
 
-Profiles can be overridden per-project in `rexxlint.toml`:
+Profiles can be overridden per-project in `rexxlint.toml`. When a `[formatting]`
+section is present it takes precedence over the `--profile` flag:
 
 ```toml
 [formatting]
@@ -92,25 +93,3 @@ Run the corpus locally:
 ```bash
 cargo test -p rexx-formatter --test corpus_idempotency
 ```
-
-## Stdin mode
-
-The formatter can read from stdin and write to stdout — no temp files, no disk writes.
-This is the recommended integration pattern for editors and CI pre-commit hooks.
-
-```bash
-# Format stdin, write formatted source to stdout
-cat file.rexx | rexxlint format --stdin
-
-# Provide the real filename for diff headers and error messages
-cat file.rexx | rexxlint format --stdin --path file.rexx
-
-# Check whether stdin would be reformatted (exit 1 = would change)
-cat file.rexx | rexxlint format --stdin --check
-
-# Show a unified diff without touching any file
-cat file.rexx | rexxlint format --stdin --diff --path file.rexx
-```
-
-`--path` sets the virtual file path used in `--diff` output and error messages.
-It does not affect which profile is loaded (profile is still selected with `--profile`).

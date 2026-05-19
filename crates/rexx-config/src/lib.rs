@@ -25,6 +25,30 @@ pub struct FormattingProfile {
     pub insert_first_comment: bool,
     #[serde(default)]
     pub keyword_casing: KeywordCasing,
+    /// Deprecated: use `keyword_casing` instead. Kept for backwards compatibility
+    /// with configs written before `keyword_casing` was introduced.
+    #[serde(default, skip_serializing)]
+    pub uppercase_keywords: Option<bool>,
+}
+
+impl FormattingProfile {
+    /// Migrate the deprecated `uppercase_keywords` boolean to `keyword_casing`.
+    /// Emits a deprecation warning so users know to update their config.
+    pub fn apply_compat(mut self) -> Self {
+        if let Some(upper) = self.uppercase_keywords.take() {
+            eprintln!(
+                "warning: `uppercase_keywords` in rexxlint.toml is deprecated; \
+                 replace it with `keyword_casing = \"{}\"` and remove the old field",
+                if upper { "upper" } else { "lower" }
+            );
+            self.keyword_casing = if upper {
+                KeywordCasing::Upper
+            } else {
+                KeywordCasing::Lower
+            };
+        }
+        self
+    }
 }
 
 fn default_true() -> bool {
@@ -71,6 +95,7 @@ pub fn mainframe_compatible() -> FormattingProfile {
         max_blank_lines: 1,
         insert_first_comment: true,
         keyword_casing: KeywordCasing::Upper,
+        uppercase_keywords: None,
     }
 }
 
@@ -84,6 +109,7 @@ pub fn standard() -> FormattingProfile {
         max_blank_lines: 1,
         insert_first_comment: true,
         keyword_casing: KeywordCasing::Lower,
+        uppercase_keywords: None,
     }
 }
 
@@ -97,6 +123,7 @@ pub fn minimal() -> FormattingProfile {
         max_blank_lines: 2,
         insert_first_comment: false,
         keyword_casing: KeywordCasing::Preserve,
+        uppercase_keywords: None,
     }
 }
 
@@ -135,7 +162,10 @@ pub fn find_config(start_path: &Path) -> Option<PathBuf> {
 
 pub fn load_config(path: &Path) -> Result<RexxLintConfig, ConfigError> {
     let content = std::fs::read_to_string(path)?;
-    let config: RexxLintConfig = toml::from_str(&content)?;
+    let mut config: RexxLintConfig = toml::from_str(&content)?;
+    if let Some(f) = config.formatting.take() {
+        config.formatting = Some(f.apply_compat());
+    }
     Ok(config)
 }
 
@@ -227,5 +257,33 @@ mod tests {
         let config = load_config(&config_path).unwrap();
         let files = config.files.unwrap();
         assert_eq!(files.exclude, vec!["vendor/**", "generated/**"]);
+    }
+
+    #[test]
+    fn test_uppercase_keywords_compat_false() {
+        let dir = tempdir().unwrap();
+        let config_path = dir.path().join("rexxlint.toml");
+        fs::write(
+            &config_path,
+            "[formatting]\nname = \"custom\"\nline_length_soft = 80\nline_length_hard = 100\ntabs_forbidden = false\nuppercase_keywords = false\n",
+        )
+        .unwrap();
+        let config = load_config(&config_path).unwrap();
+        let fmt = config.formatting.unwrap();
+        assert_eq!(fmt.keyword_casing, KeywordCasing::Lower);
+    }
+
+    #[test]
+    fn test_uppercase_keywords_compat_true() {
+        let dir = tempdir().unwrap();
+        let config_path = dir.path().join("rexxlint.toml");
+        fs::write(
+            &config_path,
+            "[formatting]\nname = \"custom\"\nline_length_soft = 80\nline_length_hard = 100\ntabs_forbidden = false\nuppercase_keywords = true\n",
+        )
+        .unwrap();
+        let config = load_config(&config_path).unwrap();
+        let fmt = config.formatting.unwrap();
+        assert_eq!(fmt.keyword_casing, KeywordCasing::Upper);
     }
 }

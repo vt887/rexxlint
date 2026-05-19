@@ -43,8 +43,9 @@ standard profiles, `false` for minimal).
 | `SELECT … END` | WHEN/OTHERWISE bodies |
 | `IF … THEN … ELSE` | THEN and ELSE branches |
 
-**Controlled by:** `indent_size` (default: 4), `tabs_forbidden` (default: `true`
-for mainframe profile).
+**Controlled by:** `indent_size` (default: 4). The formatter always uses spaces
+for indentation regardless of the `tabs_forbidden` setting; tab enforcement in
+existing source lines is not yet implemented.
 
 ---
 
@@ -102,6 +103,6 @@ keyword_casing = "upper"    # "upper" | "lower" | "preserve"
 max_blank_lines = 1          # max consecutive blank lines
 insert_first_comment = true  # prepend header comment if missing
 tabs_forbidden = true        # treat tabs in indentation as an error
-line_length_soft = 72        # advisory line length (reported, not enforced)
-line_length_hard = 80        # hard line length (reported, not enforced)
+line_length_soft = 72        # advisory line length (stored in profile; not yet enforced)
+line_length_hard = 80        # hard line length (stored in profile; not yet enforced)
 ```
