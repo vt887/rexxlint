@@ -9,7 +9,7 @@ uses, so formatting is always syntactically aware.
 | Guarantee | Detail |
 |-----------|--------|
 | **Idempotent** | `format(format(x)) == format(x)` for every input |
-| **Non-destructive** | Comments and string literals are preserved exactly |
+| **Non-destructive** | Comments are preserved exactly; string literal *content* is preserved but delimiters are normalized to single quotes (`'`) |
 | **Deterministic** | Same input always produces the same output |
 | **Safe for legacy code** | Malformed input is formatted best-effort; files are never corrupted |
 | **Atomic writes** | Files are written via a temp-file + rename; a crash mid-write leaves the original intact |
@@ -41,7 +41,8 @@ rexxlint format --profile=standard src/
 | `standard` | 4 spaces | lower | 1 | allowed |
 | `minimal` | 4 spaces | preserve | 2 | allowed |
 
-Profiles can be overridden per-project in `rexxlint.toml`:
+Profiles can be overridden per-project in `rexxlint.toml`. When a `[formatting]`
+section is present it takes precedence over the `--profile` flag:
 
 ```toml
 [formatting]
