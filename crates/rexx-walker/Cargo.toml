@@ -4,11 +4,6 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
-[[bench]]
-name = "walker"
-harness = false
-path = "../../benches/walker.rs"
-
 [dependencies]
 ignore.workspace = true
 walkdir.workspace = true
@@ -17,4 +12,3 @@ thiserror.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
-criterion.workspace = true

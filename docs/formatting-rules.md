@@ -106,3 +106,8 @@ tabs_forbidden = true        # treat tabs in indentation as an error
 line_length_soft = 72        # advisory line length (stored in profile; not yet enforced)
 line_length_hard = 80        # hard line length (stored in profile; not yet enforced)
 ```
+
+> **Deprecated field:** `uppercase_keywords = true/false` was the original boolean
+> equivalent of `keyword_casing`. It is still accepted for backwards compatibility
+> and maps `true` → `"upper"`, `false` → `"lower"`, but a deprecation warning is
+> printed. Replace it with `keyword_casing` and remove the old field.

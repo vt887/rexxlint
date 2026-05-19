@@ -14,55 +14,33 @@ concurrency:
 permissions:
   contents: read
 
-# ── Formatting ────────────────────────────────────────────────────────────────
+# ── Check (fmt + clippy + test in one runner) ─────────────────────────────────
+# Compilation happens once. fmt/clippy/test share the same target/ directory,
+# so only the first cargo invocation compiles from scratch.
 jobs:
-  fmt:
-    name: Format
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-      - run: cargo fmt --all -- --check
-
-# ── Clippy ────────────────────────────────────────────────────────────────────
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo clippy --all-targets --all-features -- -D warnings
-
-# ── Tests ─────────────────────────────────────────────────────────────────────
-  test:
-    name: Test
+  check:
+    name: Check
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo test --all
 
-# ── Benchmarks (non-blocking) ─────────────────────────────────────────────────
-  bench:
-    name: Benchmarks
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
       - uses: Swatinem/rust-cache@v2
-      - name: Verify benchmarks compile
-        run: cargo bench --no-run
+        with:
+          shared-key: "rust"
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace
 
 # ── Portable C ────────────────────────────────────────────────────────────────
   portable:
@@ -74,16 +52,36 @@ jobs:
       - name: Build and test portable-c
         run: make portable-all
 
+# ── Benchmarks (non-blocking) ─────────────────────────────────────────────────
+  bench:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [check]
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "rust"
+          save-if: false          # читаємо кеш із check, не перезаписуємо
+      - name: Verify benchmarks compile
+        run: cargo bench -p rexx-bench --no-run
+
 # ── SARIF Validation ──────────────────────────────────────────────────────────
   sarif-validate:
     name: SARIF Validation
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [fmt, clippy, test]
+    needs: [check]
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "rust"
+          save-if: false          # debug binary вже в кеші після check
 
       - name: Build CLI
         run: cargo build -p rexx-cli
@@ -108,11 +106,14 @@ jobs:
     name: Package CLI (linux-x86_64)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [fmt, clippy, test, portable]
+    needs: [check, portable]
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "rust"
+          save-if: false          # release profile — окремий кеш не потрібен
 
       - name: Build release binary
         run: cargo build --release -p rexx-cli

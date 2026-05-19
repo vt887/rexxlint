@@ -17,6 +17,9 @@ rexxlint check --fix-only src/
 rexxlint format --fix src/
 ```
 
+> **Note:** `--fix` and `--fix-only` cannot be combined with `--stdin` because
+> there is no file to write back to.
+
 ## Fix safety model
 
 A fix is considered **safe** if it satisfies all of the following:
@@ -85,6 +88,8 @@ as the very first line of the file.
 | Scenario | Exit code |
 |----------|-----------|
 | No diagnostics, no fixes applied | 0 |
-| Fixes applied successfully | 0 |
+| All diagnostics fixed, none remain | 0 |
+| `--fix-only` completed successfully | 0 |
 | Diagnostics remain after fixing | 1 |
-| I/O or parse error | 2 |
+| Write failure while applying fixes | 2 |
+| Bad arguments or I/O error | 2 |

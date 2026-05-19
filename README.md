@@ -28,6 +28,10 @@ cargo run -p rexx-cli -- format src/
 cargo run -p rexx-cli -- format --check src/   # exit 1 if any file would change
 cargo run -p rexx-cli -- format --diff   src/  # print unified diff and exit 1
 
+# Stdin mode (editor integrations — no temp files, no disk writes)
+cat file.rexx | cargo run -p rexx-cli -- check --stdin --output json
+cat file.rexx | cargo run -p rexx-cli -- format --stdin --path file.rexx
+
 # Global options
 cargo run -p rexx-cli -- --no-ignore check src/ # ignore .gitignore rules
 cargo run -p rexx-cli -- --jobs 1    check src/ # disable parallelism

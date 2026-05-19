@@ -8,11 +8,6 @@ license.workspace = true
 name = "rexxlint"
 path = "src/main.rs"
 
-[[bench]]
-name = "multi_file"
-harness = false
-path = "../../benches/multi_file.rs"
-
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
@@ -31,5 +26,4 @@ rexx-walker = { path = "../rexx-walker" }
 insta = "1"
 rexx-analyzer = { path = "../rexx-analyzer" }
 tempfile.workspace = true
-criterion.workspace = true
 serde_json.workspace = true

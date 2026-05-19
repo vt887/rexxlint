@@ -6,9 +6,3 @@ license.workspace = true
 
 [dev-dependencies]
 insta = "1"
-criterion = { version = "0.5", features = ["html_reports"] }
-
-[[bench]]
-name = "lexer"
-harness = false
-path = "../../benches/lexer.rs"
