@@ -9,7 +9,7 @@ use rayon::prelude::*;
 use rexx_analyzer::lint;
 use rexx_cli::{FileOutcome, render_json_multi, render_sarif_multi, render_text_multi};
 use rexx_config::{FormattingProfile, load_profile, resolve_config};
-use rexx_formatter::{apply_fixes, format_rexx_with_profile};
+use rexx_formatter::{apply_fixes, format_rexx_with_profile, format_rexx_with_profile_name};
 use rexx_walker::{WalkOptions, discover};
 use similar::TextDiff;
 
