@@ -22,7 +22,10 @@ fn check_r009(ctx: &RuleContext, diags: &mut Vec<Diagnostic>) {
                     continue;
                 }
                 match &t.kind {
-                    TokenKind::Newline | TokenKind::Continuation => {}
+                    TokenKind::Newline
+                    | TokenKind::Continuation
+                    | TokenKind::LineComment(_)
+                    | TokenKind::BlockComment(_) => {}
                     _ => {
                         substantive_after = true;
                         break;

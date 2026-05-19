@@ -50,7 +50,12 @@ impl Formatter {
         match self.profile.keyword_casing {
             KeywordCasing::Upper => word.to_ascii_uppercase(),
             KeywordCasing::Lower => word.to_ascii_lowercase(),
-            KeywordCasing::Preserve => word.to_string(),
+            // Structural keywords (SELECT, IF, WHEN, THEN, ELSE, OTHERWISE) are not
+            // stored as tokens in the AST, so the original casing cannot be recovered
+            // here. Fall back to uppercase (mainframe convention) rather than silently
+            // lowercasing. Tokens that flow through format_tokens() (DO, END) are
+            // preserved correctly via t.text.
+            KeywordCasing::Preserve => word.to_ascii_uppercase(),
         }
     }
 
@@ -174,8 +179,8 @@ impl Formatter {
                 TokenKind::Comma => ",".to_string(),
                 TokenKind::Semicolon => ";".to_string(),
                 TokenKind::Newline => "\n".to_string(),
-                TokenKind::Continuation => "\\\n".to_string(),
-                TokenKind::LineComment(c) | TokenKind::BlockComment(c) => c.clone(),
+                TokenKind::Continuation => t.text.clone(),
+                TokenKind::LineComment(_) | TokenKind::BlockComment(_) => t.text.clone(),
                 _ => t.text.clone(),
             };
             parts.push(part);

@@ -28,8 +28,9 @@ A fix is considered **safe** if it satisfies all of the following:
 4. String and comment contents are untouched.
 5. The fix applies to a single contiguous byte range.
 
-Fixes that do not meet these criteria are not implemented. The `--unsafe-fixes`
-flag is reserved for future use; it currently has no effect.
+Fixes that do not meet these criteria are not implemented. An `--unsafe-fixes`
+flag is planned for a future release to opt into riskier transformations; it is
+not yet available in the CLI.
 
 ## Fix application engine
 
