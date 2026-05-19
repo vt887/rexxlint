@@ -58,16 +58,21 @@ rexxlint format --stdin --path "$VIRTUAL_FILE_PATH"
 
 **Error Handling**: If `stderr` is not empty or exit code is 2, do not replace editor content.
 
-### 3. Save-on-Check (Optional)
+### 3. Check Before Save (Optional)
 
-To verify if a file is already formatted without changing it:
+To verify whether the buffer content is already formatted without writing to disk:
 
 **Command**:
 ```bash
-rexxlint format --check <path>
+rexxlint format --stdin --check --path "$VIRTUAL_FILE_PATH"
 ```
 
-**Exit Code**: 0 if formatted, 1 if changes are needed.
+**Input**: Send the current editor content to `stdin`.
+
+**Exit Code**: 0 if already formatted, 1 if reformatting is needed.
+
+This is preferable to `rexxlint format --check <path>` because it reflects the
+current unsaved buffer state rather than the on-disk file.
 
 ## Exit Codes
 

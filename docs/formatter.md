@@ -31,6 +31,16 @@ rexxlint format --fix src/
 
 # Select a formatting profile
 rexxlint format --profile=standard src/
+
+# Format stdin and write to stdout (IDE / pipe use)
+cat file.rexx | rexxlint format --stdin
+cat file.rexx | rexxlint format --stdin --path file.rexx
+
+# Check whether stdin would be reformatted, exit 1 if so
+cat file.rexx | rexxlint format --stdin --check
+
+# Show unified diff for stdin content
+cat file.rexx | rexxlint format --stdin --diff
 ```
 
 ## Profiles
